@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Company, Contact, EmailTask, Knowledge
+from .models import Company, Contact, EmailDraft, EmailTask, Knowledge
 
 
 @admin.register(Company)
@@ -30,3 +30,11 @@ class EmailTaskAdmin(admin.ModelAdmin):
     list_display = ("name", "target", "created_at")
     search_fields = ("name", "target")
     filter_horizontal = ("knowledges",)
+
+
+@admin.register(EmailDraft)
+class EmailDraftAdmin(admin.ModelAdmin):
+    list_display = ("title", "contact", "status", "version", "created_at")
+    list_filter = ("status",)
+    search_fields = ("title", "content")
+    autocomplete_fields = ("contact",)

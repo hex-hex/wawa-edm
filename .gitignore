@@ -13,3 +13,7 @@ wheels/
 .env
 db.sqlite3
 staticfiles/
+
+# IDEs
+.idea/
+.vscode/

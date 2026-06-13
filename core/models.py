@@ -72,3 +72,34 @@ class EmailTask(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class EmailDraft(models.Model):
+    class Status(models.TextChoices):
+        DRAFT = "draft", "Draft"
+        SCHEDULED = "scheduled", "Scheduled"
+        SENT = "sent", "Sent"
+        FAILED = "failed", "Failed"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    contact = models.ForeignKey(
+        Contact,
+        on_delete=models.CASCADE,
+        related_name="email_drafts",
+    )
+    title = models.CharField(max_length=255)
+    content = models.TextField(blank=True)
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.DRAFT,
+    )
+    version = models.PositiveSmallIntegerField(default=1)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.title

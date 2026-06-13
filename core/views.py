@@ -1,10 +1,11 @@
 from rest_framework import viewsets
 from rest_framework.filters import SearchFilter
 
-from .models import Company, Contact, EmailTask, Knowledge
+from .models import Company, Contact, EmailDraft, EmailTask, Knowledge
 from .serializers import (
     CompanySerializer,
     ContactSerializer,
+    EmailDraftSerializer,
     EmailTaskSerializer,
     KnowledgeSerializer,
 )
@@ -44,3 +45,18 @@ class EmailTaskViewSet(viewsets.ModelViewSet):
     serializer_class = EmailTaskSerializer
     filter_backends = [SearchFilter]
     search_fields = ["name", "target", "strategy"]
+
+
+class EmailDraftViewSet(viewsets.ModelViewSet):
+    """CRUD API for email drafts."""
+
+    queryset = EmailDraft.objects.select_related("contact").all()
+    serializer_class = EmailDraftSerializer
+    filter_backends = [SearchFilter]
+    search_fields = [
+        "title",
+        "content",
+        "contact__email",
+        "contact__first_name",
+        "contact__last_name",
+    ]
