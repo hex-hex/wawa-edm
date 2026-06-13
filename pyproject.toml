@@ -1,7 +1,7 @@
 [project]
 name = "wawa-edm"
 version = "0.1.0"
-description = "Add your description here"
+description = "Django REST backend for an EDM/CRM: companies, contacts, knowledge, email tasks and drafts."
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
