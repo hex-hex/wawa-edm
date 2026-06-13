@@ -11,11 +11,34 @@ import markdown as _markdown
 import nh3
 from django.utils.safestring import mark_safe
 
-# Theme-aware container (uses Django admin CSS vars, with safe fallbacks).
-_PREVIEW_STYLE = (
-    "max-width:48rem;padding:12px 16px;border:1px solid var(--border-color,#e0e0e0);"
-    "border-radius:6px;background:var(--body-bg,#fff);color:var(--body-fg,#333);"
-    "overflow:auto;"
+# Scoped stylesheet so the rendered content uses normal content typography
+# instead of inheriting the Django admin's global element styles (e.g. the blue
+# bar the admin paints behind every <h2>). All rules are namespaced to the
+# preview container; theme-aware via admin CSS vars with safe fallbacks.
+_PREVIEW_CSS = mark_safe(
+    "<style>"
+    ".wawa-preview{max-width:48rem;padding:12px 16px;line-height:1.5;overflow:auto;"
+    "border:1px solid var(--border-color,#ccc);border-radius:6px;"
+    "background:var(--body-bg,#fff);color:var(--body-fg,#333);}"
+    ".wawa-preview>:first-child{margin-top:0;}.wawa-preview>:last-child{margin-bottom:0;}"
+    ".wawa-preview h1,.wawa-preview h2,.wawa-preview h3,.wawa-preview h4,"
+    ".wawa-preview h5,.wawa-preview h6{background:none;margin:.7em 0 .3em;padding:0;"
+    "color:inherit;font-weight:600;line-height:1.25;}"
+    ".wawa-preview h1{font-size:1.6em;}.wawa-preview h2{font-size:1.35em;}"
+    ".wawa-preview h3{font-size:1.15em;}.wawa-preview h4{font-size:1em;}"
+    ".wawa-preview p{margin:.5em 0;}"
+    ".wawa-preview ul,.wawa-preview ol{margin:.5em 0;padding-left:1.5em;}"
+    ".wawa-preview li{margin:.2em 0;}"
+    ".wawa-preview a{color:var(--link-fg,#447e9b);}"
+    ".wawa-preview code{background:var(--darkened-bg,#f5f5f5);padding:.1em .3em;border-radius:3px;}"
+    ".wawa-preview pre{background:var(--darkened-bg,#f5f5f5);padding:.6em .8em;border-radius:4px;overflow:auto;}"
+    ".wawa-preview pre code{background:none;padding:0;}"
+    ".wawa-preview blockquote{margin:.5em 0;padding-left:1em;color:var(--body-quiet-color,#666);"
+    "border-left:3px solid var(--border-color,#ccc);}"
+    ".wawa-preview img{max-width:100%;height:auto;}"
+    ".wawa-preview table{border-collapse:collapse;}"
+    ".wawa-preview th,.wawa-preview td{border:1px solid var(--border-color,#ccc);padding:.3em .6em;}"
+    "</style>"
 )
 _EMPTY = mark_safe('<span style="color:var(--body-quiet-color,#999)">—</span>')
 
@@ -55,7 +78,7 @@ def rendered_field(source: str, *, fmt: str = "markdown", label: str | None = No
         value = getattr(obj, source, "") if obj is not None else ""
         if not value:
             return _EMPTY
-        return mark_safe(f'<div style="{_PREVIEW_STYLE}">{renderer(value)}</div>')
+        return mark_safe(f'{_PREVIEW_CSS}<div class="wawa-preview">{renderer(value)}</div>')
 
     _display.short_description = label or source.replace("_", " ").title()
     return _display
