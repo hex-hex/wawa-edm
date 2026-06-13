@@ -1,0 +1,21 @@
+services:
+  web:
+    build: .
+    image: wawa-edm:latest
+    container_name: wawa-edm-web
+    ports:
+      # Host 8010 -> container 8000. (Host 8000 is taken by another local
+      # process on this machine; change back to "8000:8000" once it's free.)
+      - "8010:8000"
+    environment:
+      DJANGO_SECRET_KEY: "django-insecure-change-me-in-production"
+      DJANGO_DEBUG: "False"
+      DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1"
+      # Reuse the Postgres/Redis already running in the local dev_stack,
+      # reached via their host-published ports. host.docker.internal maps to
+      # the Docker host (extra_hosts makes it work on Linux too).
+      DATABASE_URL: "postgres://postgres:postgres@host.docker.internal:5432/wawa_edm"
+      REDIS_URL: "redis://host.docker.internal:6379/1"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped

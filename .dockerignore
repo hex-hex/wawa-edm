@@ -1,0 +1,18 @@
+# Local virtualenv (wrong platform for the image)
+.venv
+
+# VCS / editor
+.git
+.gitignore
+
+# Python caches
+__pycache__/
+*.py[oc]
+
+# Secrets & local-only files (env is provided via compose)
+.env
+
+# Build artifacts regenerated inside the image
+staticfiles/
+db.sqlite3
+*.log
