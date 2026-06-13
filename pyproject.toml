@@ -10,6 +10,8 @@ dependencies = [
     "django-environ>=0.13.0",
     "django-redis>=7.0.0",
     "djangorestframework>=3.17.1",
+    "markdown>=3.10.2",
+    "nh3>=0.3.5",
     "psycopg[binary]>=3.3.4",
     "whitenoise>=6.12.0",
 ]
