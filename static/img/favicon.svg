@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">Wawa EDM</title>
+  <defs>
+    <linearGradient id="tile" x1="5" y1="4" x2="60" y2="61" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7257FF"/>
+      <stop offset="1" stop-color="#3525B8"/>
+    </linearGradient>
+    <linearGradient id="wave" x1="21" y1="27" x2="44" y2="42" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFCE69"/>
+      <stop offset="1" stop-color="#FF7A59"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="15" fill="url(#tile)"/>
+  <path d="M14 23.5A4.5 4.5 0 0 1 18.5 19h27a4.5 4.5 0 0 1 4.5 4.5v20a4.5 4.5 0 0 1-4.5 4.5h-27a4.5 4.5 0 0 1-4.5-4.5v-20Z"
+        fill="#fff" fill-opacity="0.1" stroke="#fff" stroke-width="3.5" stroke-linejoin="round"/>
+  <path d="m16 22 16 13 16-13M16 45l11.5-11M48 45 36.5 34" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="m21 29 4.5 9L32 31l6.5 7 4.5-9" fill="none" stroke="url(#wave)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="m49 8.5 1.6 3 3 1.6-3 1.6-1.6 3-1.6-3-3-1.6 3-1.6 1.6-3Z" fill="#FFCE69"/>
+</svg>

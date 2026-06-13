@@ -1,5 +1,9 @@
 # wawa-edm
 
+<p align="center">
+  <img src="static/img/logo.svg" alt="Wawa EDM logo" width="560">
+</p>
+
 A Django REST backend for a lightweight **EDM** (email direct marketing) / CRM workflow.
 It manages companies, contacts, reusable knowledge snippets, email tasks (campaigns), and
 email drafts — exposing full CRUD REST APIs and a Django admin with rendered Markdown/HTML
@@ -128,6 +132,34 @@ hidden) via the reusable helper in [`core/admin_render.py`](core/admin_render.py
 underlying fields are writable through the public API, all rendered output is sanitized with
 `nh3` to prevent stored XSS in the admin.
 
+## Brand assets
+
+The Wawa EDM mark combines an envelope, a W-shaped message wave, and a send spark. Source SVGs
+and ready-to-use raster exports live in [`static/img/`](static/img/).
+
+| Asset | Purpose |
+|-------|---------|
+| [`logo.svg`](static/img/logo.svg) | Preferred scalable wordmark |
+| [`logo.png`](static/img/logo.png) | Transparent PNG wordmark |
+| [`favicon.svg`](static/img/favicon.svg) | Preferred scalable browser icon |
+| [`favicon.ico`](static/img/favicon.ico) | Multi-size legacy browser icon |
+| [`favicon-32x32.png`](static/img/favicon-32x32.png) | Standard browser favicon |
+| [`favicon-192x192.png`](static/img/favicon-192x192.png) | Android / PWA icon |
+| [`favicon-512x512.png`](static/img/favicon-512x512.png) | High-resolution app icon |
+
+The project-level `static/` directory is registered through `STATICFILES_DIRS`, so Django and
+`collectstatic` can discover these assets. In a Django template:
+
+```django
+{% load static %}
+
+<link rel="icon" href="{% static 'img/favicon.ico' %}" sizes="any">
+<link rel="icon" href="{% static 'img/favicon.svg' %}" type="image/svg+xml">
+<link rel="apple-touch-icon" href="{% static 'img/favicon-192x192.png' %}">
+
+<img src="{% static 'img/logo.svg' %}" alt="Wawa EDM">
+```
+
 ## Project structure
 
 ```
@@ -136,6 +168,8 @@ wawa-edm/
 ├── core/                # app: models, serializers, views, urls, admin
 │   ├── admin_render.py  # reusable Markdown/HTML preview component
 │   └── migrations/
+├── static/
+│   └── img/             # logo and favicon assets
 ├── Dockerfile
 ├── docker-compose.yml
 ├── manage.py

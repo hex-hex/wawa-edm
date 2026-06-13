@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 160" role="img" aria-labelledby="title desc">
+  <title id="title">Wawa EDM</title>
+  <desc id="desc">A purple envelope with an energetic W-shaped message wave beside the Wawa EDM wordmark.</desc>
+  <defs>
+    <linearGradient id="tile" x1="14" y1="12" x2="144" y2="148" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7257FF"/>
+      <stop offset="0.56" stop-color="#5540E8"/>
+      <stop offset="1" stop-color="#3525B8"/>
+    </linearGradient>
+    <linearGradient id="spark" x1="113" y1="29" x2="133" y2="49" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFCE69"/>
+      <stop offset="1" stop-color="#FF7A59"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="150%" height="160%">
+      <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#2D227B" flood-opacity="0.2"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#shadow)">
+    <rect x="12" y="12" width="136" height="136" rx="34" fill="url(#tile)"/>
+  </g>
+
+  <path d="M40 58.5C40 52.7 44.7 48 50.5 48h59c5.8 0 10.5 4.7 10.5 10.5v43c0 5.8-4.7 10.5-10.5 10.5h-59C44.7 112 40 107.3 40 101.5v-43Z"
+        fill="#fff" fill-opacity="0.12" stroke="#fff" stroke-width="7" stroke-linejoin="round"/>
+  <path d="m44 55 36 29 36-29" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="m44 105 27-26m45 26L89 79" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round"/>
+  <path d="M56 72 66 91 80 75l14 16 10-19" fill="none" stroke="url(#spark)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M117 35.5 121 28l4 7.5 7.5 4-7.5 4-4 7.5-4-7.5-7.5-4 7.5-4Z" fill="url(#spark)"/>
+
+  <text x="180" y="91" fill="#17132F" font-family="Arial Rounded MT Bold, Avenir Next, Arial, sans-serif"
+        font-size="62" font-weight="800" letter-spacing="-2">WAWA</text>
+  <rect x="182" y="107" width="84" height="29" rx="14.5" fill="#EEEAFE"/>
+  <text x="224" y="128" fill="#5540E8" text-anchor="middle"
+        font-family="Avenir Next, Arial, sans-serif" font-size="16" font-weight="800" letter-spacing="2.5">EDM</text>
+  <text x="279" y="128" fill="#77728D" font-family="Avenir Next, Arial, sans-serif"
+        font-size="16" font-weight="600" letter-spacing="0.8">EMAIL, IN MOTION</text>
+</svg>
