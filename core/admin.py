@@ -25,8 +25,9 @@ class ContactAdmin(admin.ModelAdmin):
     search_fields = ("first_name", "last_name", "email")
     autocomplete_fields = ("company",)
     story_preview = rendered_field("story", fmt="markdown", label="Story")
-    exclude = ("story",)
-    readonly_fields = ("story_preview",)
+    behavior_preview = rendered_field("behavior", fmt="markdown", label="Behavior")
+    exclude = ("story", "behavior")
+    readonly_fields = ("story_preview", "behavior_preview")
 
 
 @admin.register(Knowledge)
