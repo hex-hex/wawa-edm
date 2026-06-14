@@ -41,7 +41,7 @@ All models live in the `core` app. UUID PKs + timestamps throughout.
 
 | Model | Fields | Relationships |
 |-------|--------|---------------|
-| `Company` | `name`, `website`, `about` (markdown) | — |
+| `Company` | `name`, `website`, `address`, `about` (markdown) | — |
 | `Contact` | `first_name`, `middle_name`, `last_name`, `email`, `role`, `phone`, `priority` (enum), `gender` (enum), `behavior` (markdown), `story` (markdown) | `company` → `Company` |
 | `Knowledge` | `abstract`, `content` (markdown) | — |
 | `EmailTask` | `name`, `target`, `strategy` | `knowledges` ⇄ `Knowledge` (M2M) |
