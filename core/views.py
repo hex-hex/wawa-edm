@@ -24,7 +24,7 @@ class ContactViewSet(viewsets.ModelViewSet):
     queryset = Contact.objects.select_related("company").all()
     serializer_class = ContactSerializer
     filterset_fields = ["priority"]
-    search_fields = ["first_name", "last_name", "email", "role", "phone", "behavior", "company__name"]
+    search_fields = ["first_name", "middle_name", "last_name", "email", "role", "phone", "behavior", "company__name"]
 
 
 class KnowledgeViewSet(viewsets.ModelViewSet):

@@ -31,6 +31,7 @@ class Contact(models.Model):
         related_name="contacts",
     )
     first_name = models.CharField(max_length=150)
+    middle_name = models.CharField(max_length=150, blank=True, null=True)
     last_name = models.CharField(max_length=150)
     email = models.EmailField()
     role = models.CharField(max_length=63, blank=True, null=True)

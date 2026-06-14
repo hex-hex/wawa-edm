@@ -42,13 +42,15 @@ All models live in the `core` app. UUID PKs + timestamps throughout.
 | Model | Fields | Relationships |
 |-------|--------|---------------|
 | `Company` | `name`, `about` (markdown) | — |
-| `Contact` | `first_name`, `last_name`, `email`, `story` (markdown) | `company` → `Company` |
+| `Contact` | `first_name`, `middle_name`, `last_name`, `email`, `role`, `phone`, `priority` (enum), `behavior` (markdown), `story` (markdown) | `company` → `Company` |
 | `Knowledge` | `abstract`, `content` (markdown) | — |
 | `EmailTask` | `name`, `target`, `strategy` | `knowledges` ⇄ `Knowledge` (M2M) |
 | `EmailDraft` | `title`, `pain_points` (markdown), `content` (HTML), `status`, `version` | `contact` → `Contact` |
 
 Relationships: `Company` 1—∗ `Contact` 1—∗ `EmailDraft`; `EmailTask` ∗—∗ `Knowledge`.
 `EmailDraft.status` is one of `draft` (default) / `scheduled` / `sent` / `failed`.
+`Contact.priority` is one of `hot` / `warm` / `cold` (optional). `middle_name`, `role`, `phone`,
+`priority`, and `behavior` are all optional.
 
 ## API
 
@@ -63,12 +65,12 @@ Base path: `/api/` (browsable API enabled in DEBUG). All endpoints support
 | Email tasks | `/api/email-tasks/` |
 | Email drafts | `/api/email-drafts/` |
 
-**Filtering** — enum fields support exact-match query params (via `django-filter`).
-Currently `EmailDraft.status`:
+**Filtering** — enum fields support exact-match query params (via `django-filter`):
 
 ```
 GET /api/email-drafts/?status=draft        # exact match: draft | scheduled | sent | failed
 GET /api/email-drafts/?status=sent&search=welcome   # combine with ?search=
+GET /api/contacts/?priority=hot            # exact match: hot | warm | cold
 ```
 
 An invalid value (e.g. `?status=bogus`) returns `400`.

@@ -20,6 +20,7 @@ class ContactSerializer(serializers.ModelSerializer):
             "company",
             "company_name",
             "first_name",
+            "middle_name",
             "last_name",
             "email",
             "role",
