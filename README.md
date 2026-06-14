@@ -50,8 +50,8 @@ All models live in the `core` app. UUID PKs + timestamps throughout.
 Relationships: `Company` 1—∗ `Contact` 1—∗ `EmailDraft`; `EmailTask` ∗—∗ `Knowledge`.
 `EmailDraft.status` is one of `draft` (default) / `scheduled` / `sent` / `failed`.
 `Contact.priority` is one of `hot` / `warm` / `cold` and `Contact.gender` is one of
-`male` / `female` / `other`. `middle_name`, `role`, `phone`, `priority`, `gender`, and
-`behavior` are all optional.
+`male` / `female` / `other`. `middle_name`, `email`, `role`, `phone`, `priority`, `gender`,
+and `behavior` are all optional.
 
 ## API
 
