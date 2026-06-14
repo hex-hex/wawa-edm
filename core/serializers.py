@@ -44,6 +44,7 @@ class KnowledgeSerializer(serializers.ModelSerializer):
 
 class EmailDraftSerializer(serializers.ModelSerializer):
     contact_name = serializers.SerializerMethodField()
+    task_name = serializers.SerializerMethodField()
 
     class Meta:
         model = EmailDraft
@@ -51,6 +52,8 @@ class EmailDraftSerializer(serializers.ModelSerializer):
             "id",
             "contact",
             "contact_name",
+            "task",
+            "task_name",
             "title",
             "pain_points",
             "content",
@@ -63,6 +66,9 @@ class EmailDraftSerializer(serializers.ModelSerializer):
 
     def get_contact_name(self, obj):
         return str(obj.contact)
+
+    def get_task_name(self, obj):
+        return obj.task.name if obj.task_id else None
 
 
 class EmailTaskSerializer(serializers.ModelSerializer):

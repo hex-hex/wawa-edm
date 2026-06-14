@@ -113,6 +113,14 @@ class EmailDraft(models.Model):
         on_delete=models.CASCADE,
         related_name="email_drafts",
     )
+    task = models.ForeignKey(
+        EmailTask,
+        on_delete=models.SET_NULL,
+        related_name="email_drafts",
+        null=True,
+        blank=True,
+        help_text="The EmailTask this draft was written under the guidance of.",
+    )
     title = models.CharField(max_length=255)
     pain_points = models.TextField(blank=True, null=True)
     content = models.TextField(blank=True, null=True)

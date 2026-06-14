@@ -49,10 +49,10 @@ class EmailTaskAdmin(admin.ModelAdmin):
 
 @admin.register(EmailDraft)
 class EmailDraftAdmin(admin.ModelAdmin):
-    list_display = ("title", "contact", "status", "version", "created_at")
-    list_filter = ("status",)
+    list_display = ("title", "contact", "task", "status", "version", "created_at")
+    list_filter = ("status", "task")
     search_fields = ("title", "content")
-    autocomplete_fields = ("contact",)
+    autocomplete_fields = ("contact", "task")
     pain_points_preview = rendered_field("pain_points", fmt="markdown", label="Pain points")
     content_preview = rendered_field("content", fmt="html", label="Content (HTML)")
     exclude = ("pain_points", "content")

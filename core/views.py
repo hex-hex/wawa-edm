@@ -46,9 +46,9 @@ class EmailTaskViewSet(viewsets.ModelViewSet):
 class EmailDraftViewSet(viewsets.ModelViewSet):
     """CRUD API for email drafts."""
 
-    queryset = EmailDraft.objects.select_related("contact").all()
+    queryset = EmailDraft.objects.select_related("contact", "task").all()
     serializer_class = EmailDraftSerializer
-    filterset_fields = ["status"]
+    filterset_fields = ["status", "task"]
     search_fields = [
         "title",
         "content",

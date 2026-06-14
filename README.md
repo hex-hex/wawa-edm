@@ -45,9 +45,10 @@ All models live in the `core` app. UUID PKs + timestamps throughout.
 | `Contact` | `first_name`, `middle_name`, `last_name`, `email`, `role`, `phone`, `priority` (enum), `gender` (enum), `behavior` (markdown), `story` (markdown) | `company` → `Company` |
 | `Knowledge` | `abstract`, `content` (markdown) | — |
 | `EmailTask` | `name`, `target`, `strategy` | `knowledges` ⇄ `Knowledge` (M2M) |
-| `EmailDraft` | `title`, `pain_points` (markdown), `content` (HTML), `status`, `version` | `contact` → `Contact` |
+| `EmailDraft` | `title`, `pain_points` (markdown), `content` (HTML), `status`, `version` | `contact` → `Contact`, `task` → `EmailTask` |
 
-Relationships: `Company` 1—∗ `Contact` 1—∗ `EmailDraft`; `EmailTask` ∗—∗ `Knowledge`.
+Relationships: `Company` 1—∗ `Contact` 1—∗ `EmailDraft`; `EmailTask` 1—∗ `EmailDraft`
+(the task that guided the draft); `EmailTask` ∗—∗ `Knowledge`.
 `EmailDraft.status` is one of `draft` (default) / `scheduled` / `sent` / `failed`.
 `Contact.priority` is one of `hot` / `warm` / `cold` and `Contact.gender` is one of
 `male` / `female` / `other`. `middle_name`, `email`, `role`, `phone`, `priority`, `gender`,
@@ -73,6 +74,7 @@ GET /api/email-drafts/?status=draft        # exact match: draft | scheduled | se
 GET /api/email-drafts/?status=sent&search=welcome   # combine with ?search=
 GET /api/contacts/?priority=hot            # exact match: hot | warm | cold
 GET /api/contacts/?gender=female           # exact match: male | female | other
+GET /api/email-drafts/?task=<uuid>         # drafts written under a given EmailTask
 ```
 
 An invalid value (e.g. `?status=bogus`) returns `400`.
