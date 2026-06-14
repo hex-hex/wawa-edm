@@ -15,7 +15,7 @@ previews.
 - **Django admin** for all models, with read-only **Markdown/HTML previews** of long-form
   content fields (sanitized with `nh3`).
 - **UUID primary keys** and `created_at` / `updated_at` timestamps on every model.
-- Served over **ASGI** (Daphne); static files via **WhiteNoise**.
+- Served over **ASGI** (Uvicorn); static files via **WhiteNoise**.
 - **PostgreSQL** storage and **Redis** cache, configured from the environment (`.env`).
 - Reproducible tooling with **uv**; containerized with a **Dockerfile** + **docker-compose**.
 
@@ -26,7 +26,7 @@ previews.
 | Language / runtime | Python 3.13+ (managed by `uv`) |
 | Framework | Django 6.0 |
 | API | Django REST Framework |
-| ASGI server | Daphne |
+| ASGI server | Uvicorn |
 | Static files | WhiteNoise |
 | Database | PostgreSQL (via `psycopg` 3) |
 | Cache | Redis (via `django-redis`) |
@@ -89,7 +89,7 @@ uv run python manage.py migrate
 # 5. Create an admin user
 uv run python manage.py createsuperuser
 
-# 6. Run the dev server (Daphne / ASGI)
+# 6. Run the dev server
 uv run python manage.py runserver
 ```
 
@@ -109,7 +109,7 @@ Read from `.env` (see [`.env.example`](.env.example)):
 
 ## Running with Docker
 
-The image builds a runnable app (deps via `uv`, static collected, served by Daphne); the
+The image builds a runnable app (deps via `uv`, static collected, served by Uvicorn); the
 entrypoint runs migrations on startup. `docker-compose.yml` reuses the host's Postgres/Redis
 via `host.docker.internal`.
 

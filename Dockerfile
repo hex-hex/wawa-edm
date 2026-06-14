@@ -29,6 +29,6 @@ RUN python manage.py collectstatic --noinput \
 
 EXPOSE 8000
 
-# Entrypoint runs migrations, then execs the CMD (daphne ASGI server).
+# Entrypoint runs migrations, then execs the CMD (uvicorn ASGI server).
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
-CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "config.asgi:application"]
+CMD ["uvicorn", "config.asgi:application", "--host", "0.0.0.0", "--port", "8000"]
