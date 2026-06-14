@@ -46,6 +46,7 @@ class EmailDraftSerializer(serializers.ModelSerializer):
             "contact",
             "contact_name",
             "title",
+            "pain_points",
             "content",
             "status",
             "version",

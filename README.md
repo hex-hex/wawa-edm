@@ -11,7 +11,8 @@ previews.
 
 ## Features
 
-- **REST API** (Django REST Framework) with CRUD for every resource, pagination, and `?search=`.
+- **REST API** (Django REST Framework) with CRUD for every resource, pagination, `?search=`,
+  and exact filtering on enum fields (e.g. `?status=`).
 - **Django admin** for all models, with read-only **Markdown/HTML previews** of long-form
   content fields (sanitized with `nh3`).
 - **UUID primary keys** and `created_at` / `updated_at` timestamps on every model.
@@ -31,6 +32,7 @@ previews.
 | Database | PostgreSQL (via `psycopg` 3) |
 | Cache | Redis (via `django-redis`) |
 | Config | `django-environ` (`.env`) |
+| Filtering | `django-filter` (exact / enum) |
 | Rendering | `markdown` + `nh3` (sanitizer) |
 
 ## Data model
@@ -43,7 +45,7 @@ All models live in the `core` app. UUID PKs + timestamps throughout.
 | `Contact` | `first_name`, `last_name`, `email`, `story` (markdown) | `company` → `Company` |
 | `Knowledge` | `abstract`, `content` (markdown) | — |
 | `EmailTask` | `name`, `target`, `strategy` | `knowledges` ⇄ `Knowledge` (M2M) |
-| `EmailDraft` | `title`, `content` (HTML), `status`, `version` | `contact` → `Contact` |
+| `EmailDraft` | `title`, `pain_points` (markdown), `content` (HTML), `status`, `version` | `contact` → `Contact` |
 
 Relationships: `Company` 1—∗ `Contact` 1—∗ `EmailDraft`; `EmailTask` ∗—∗ `Knowledge`.
 `EmailDraft.status` is one of `draft` (default) / `scheduled` / `sent` / `failed`.
@@ -60,6 +62,16 @@ Base path: `/api/` (browsable API enabled in DEBUG). All endpoints support
 | Knowledge | `/api/knowledge/` |
 | Email tasks | `/api/email-tasks/` |
 | Email drafts | `/api/email-drafts/` |
+
+**Filtering** — enum fields support exact-match query params (via `django-filter`).
+Currently `EmailDraft.status`:
+
+```
+GET /api/email-drafts/?status=draft        # exact match: draft | scheduled | sent | failed
+GET /api/email-drafts/?status=sent&search=welcome   # combine with ?search=
+```
+
+An invalid value (e.g. `?status=bogus`) returns `400`.
 
 Admin: `/admin/`.
 
@@ -126,11 +138,11 @@ compose `environment` block to point at a different database or cache.
 
 ## Admin previews
 
-`Company.about`, `Contact.story`, and `Knowledge.content` render as **Markdown**;
-`EmailDraft.content` renders as **HTML**. These fields are shown read-only (the raw editor is
-hidden) via the reusable helper in [`core/admin_render.py`](core/admin_render.py). Because the
-underlying fields are writable through the public API, all rendered output is sanitized with
-`nh3` to prevent stored XSS in the admin.
+`Company.about`, `Contact.story`, `Knowledge.content`, and `EmailDraft.pain_points` render as
+**Markdown**; `EmailDraft.content` renders as **HTML**. These fields are shown read-only (the
+raw editor is hidden) via the reusable helper in [`core/admin_render.py`](core/admin_render.py).
+Because the underlying fields are writable through the public API, all rendered output is
+sanitized with `nh3` to prevent stored XSS in the admin.
 
 ## Brand assets
 
