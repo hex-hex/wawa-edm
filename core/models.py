@@ -123,7 +123,6 @@ class EmailDraft(models.Model):
         blank=True,
         help_text="The EmailTask this draft was written under the guidance of.",
     )
-    title = models.CharField(max_length=255)
     subject = models.CharField(max_length=255, blank=True, null=True)
     pain_points = models.TextField(blank=True, null=True)
     content = models.TextField(blank=True, null=True)
@@ -140,4 +139,4 @@ class EmailDraft(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return self.title
+        return self.subject or f"Draft {self.pk}"

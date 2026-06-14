@@ -49,9 +49,9 @@ class EmailTaskAdmin(admin.ModelAdmin):
 
 @admin.register(EmailDraft)
 class EmailDraftAdmin(admin.ModelAdmin):
-    list_display = ("created_at", "title", "contact", "task", "status", "version")
+    list_display = ("created_at", "subject", "contact", "task", "status", "version")
     list_filter = ("status", "task")
-    search_fields = ("title", "content")
+    search_fields = ("subject", "content")
     autocomplete_fields = ("contact", "task")
     pain_points_preview = rendered_field("pain_points", fmt="markdown", label="Pain points")
     content_preview = rendered_field("content", fmt="html", label="Content (HTML)")

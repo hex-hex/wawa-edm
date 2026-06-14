@@ -54,7 +54,6 @@ class EmailDraftSerializer(serializers.ModelSerializer):
             "contact_name",
             "task",
             "task_name",
-            "title",
             "subject",
             "pain_points",
             "content",
