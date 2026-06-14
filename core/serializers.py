@@ -84,3 +84,12 @@ class EmailTaskSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
+
+    def to_representation(self, instance):
+        # Accept knowledges by id on write, but return the full nested
+        # Knowledge objects on read.
+        data = super().to_representation(instance)
+        data["knowledges"] = KnowledgeSerializer(
+            instance.knowledges.all(), many=True
+        ).data
+        return data

@@ -49,7 +49,7 @@ class EmailTaskAdmin(admin.ModelAdmin):
 
 @admin.register(EmailDraft)
 class EmailDraftAdmin(admin.ModelAdmin):
-    list_display = ("title", "contact", "task", "status", "version", "created_at")
+    list_display = ("created_at", "title", "contact", "task", "status", "version")
     list_filter = ("status", "task")
     search_fields = ("title", "content")
     autocomplete_fields = ("contact", "task")
