@@ -45,7 +45,7 @@ All models live in the `core` app. UUID PKs + timestamps throughout.
 | `Contact` | `first_name`, `middle_name`, `last_name`, `email`, `role`, `phone`, `priority` (enum), `gender` (enum), `behavior` (markdown), `story` (markdown) | `company` → `Company` |
 | `Knowledge` | `abstract`, `content` (markdown) | — |
 | `EmailTask` | `name`, `target`, `strategy` | `knowledges` ⇄ `Knowledge` (M2M) |
-| `EmailDraft` | `title`, `pain_points` (markdown), `content` (HTML), `status`, `version` | `contact` → `Contact`, `task` → `EmailTask` |
+| `EmailDraft` | `title`, `subject`, `pain_points` (markdown), `content` (HTML), `status`, `version` | `contact` → `Contact`, `task` → `EmailTask` |
 
 Relationships: `Company` 1—∗ `Contact` 1—∗ `EmailDraft`; `EmailTask` 1—∗ `EmailDraft`
 (the task that guided the draft); `EmailTask` ∗—∗ `Knowledge`.
