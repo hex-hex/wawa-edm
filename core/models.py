@@ -19,6 +19,11 @@ class Company(models.Model):
 
 
 class Contact(models.Model):
+    class Priority(models.TextChoices):
+        HOT = "hot", "Hot"
+        WARM = "warm", "Warm"
+        COLD = "cold", "Cold"
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     company = models.ForeignKey(
         Company,
@@ -30,6 +35,13 @@ class Contact(models.Model):
     email = models.EmailField()
     role = models.CharField(max_length=63, blank=True, null=True)
     phone = models.CharField(max_length=63, blank=True, null=True)
+    priority = models.CharField(
+        max_length=10,
+        choices=Priority.choices,
+        blank=True,
+        null=True,
+    )
+    behavior = models.TextField(blank=True, null=True)
     story = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

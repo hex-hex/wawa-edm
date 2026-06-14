@@ -24,6 +24,8 @@ class ContactSerializer(serializers.ModelSerializer):
             "email",
             "role",
             "phone",
+            "priority",
+            "behavior",
             "story",
             "created_at",
             "updated_at",
