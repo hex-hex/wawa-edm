@@ -3,6 +3,10 @@ from django.contrib import admin
 from .admin_render import rendered_field
 from .models import Company, Contact, EmailDraft, EmailTask, Knowledge
 
+admin.site.site_header = "Wawa EDM"
+admin.site.site_title = "Wawa EDM Admin"
+admin.site.index_title = "Campaign workspace"
+
 
 @admin.register(Company)
 class CompanyAdmin(admin.ModelAdmin):

@@ -28,6 +28,8 @@ class Contact(models.Model):
     first_name = models.CharField(max_length=150)
     last_name = models.CharField(max_length=150)
     email = models.EmailField()
+    role = models.CharField(max_length=63, blank=True, null=True)
+    phone = models.CharField(max_length=63, blank=True, null=True)
     story = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -22,6 +22,8 @@ class ContactSerializer(serializers.ModelSerializer):
             "first_name",
             "last_name",
             "email",
+            "role",
+            "phone",
             "story",
             "created_at",
             "updated_at",
