@@ -26,6 +26,7 @@ class ContactSerializer(serializers.ModelSerializer):
             "role",
             "phone",
             "priority",
+            "gender",
             "behavior",
             "story",
             "created_at",

@@ -24,6 +24,11 @@ class Contact(models.Model):
         WARM = "warm", "Warm"
         COLD = "cold", "Cold"
 
+    class Gender(models.TextChoices):
+        MALE = "male", "Male"
+        FEMALE = "female", "Female"
+        OTHER = "other", "Other"
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     company = models.ForeignKey(
         Company,
@@ -39,6 +44,12 @@ class Contact(models.Model):
     priority = models.CharField(
         max_length=10,
         choices=Priority.choices,
+        blank=True,
+        null=True,
+    )
+    gender = models.CharField(
+        max_length=10,
+        choices=Gender.choices,
         blank=True,
         null=True,
     )
