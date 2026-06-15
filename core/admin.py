@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.db.models import OuterRef, Subquery
 
 from .admin_render import rendered_field
 from .models import Company, Contact, EmailDraft, EmailTask, Knowledge
@@ -48,10 +49,33 @@ class EmailTaskAdmin(admin.ModelAdmin):
     filter_horizontal = ("knowledges",)
 
 
+class TaskLatestPerContactFilter(admin.SimpleListFilter):
+    """Filter EmailDrafts by EmailTask, but show only the highest-version draft
+    per contact within the selected task."""
+
+    title = "task (latest per contact)"
+    parameter_name = "task"
+
+    def lookups(self, request, model_admin):
+        return [(t.pk, str(t)) for t in EmailTask.objects.all()]
+
+    def queryset(self, request, queryset):
+        task_id = self.value()
+        if not task_id:
+            return queryset
+        base = queryset.filter(task_id=task_id)
+        latest_version = (
+            EmailDraft.objects.filter(task_id=task_id, contact=OuterRef("contact"))
+            .order_by("-version")
+            .values("version")[:1]
+        )
+        return base.filter(version=Subquery(latest_version))
+
+
 @admin.register(EmailDraft)
 class EmailDraftAdmin(admin.ModelAdmin):
     list_display = ("created_at", "subject", "contact", "task", "status", "version")
-    list_filter = ("status", "task")
+    list_filter = ("status", TaskLatestPerContactFilter)
     search_fields = ("subject", "content")
     autocomplete_fields = ("contact", "task")
     pain_points_preview = rendered_field("pain_points", fmt="markdown", label="Pain points")
