@@ -20,10 +20,11 @@ class CompanyAdmin(admin.ModelAdmin):
 
 @admin.register(Contact)
 class ContactAdmin(admin.ModelAdmin):
-    list_display = ("first_name", "last_name", "email", "company", "created_at")
+    list_display = ("created_at", "first_name", "last_name", "email", "company")
     list_filter = ("company",)
     search_fields = ("first_name", "last_name", "email")
     autocomplete_fields = ("company",)
+    ordering = ("-created_at",)
     story_preview = rendered_field("story", fmt="markdown", label="Story")
     behavior_preview = rendered_field("behavior", fmt="markdown", label="Behavior")
     exclude = ("story", "behavior")
