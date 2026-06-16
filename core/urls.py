@@ -5,12 +5,14 @@ from .views import (
     ContactViewSet,
     EmailDraftViewSet,
     EmailTaskViewSet,
+    KnowledgeTagViewSet,
     KnowledgeViewSet,
 )
 
 router = DefaultRouter()
 router.register(r"companies", CompanyViewSet)
 router.register(r"contacts", ContactViewSet)
+router.register(r"knowledge-tags", KnowledgeTagViewSet)
 router.register(r"knowledge", KnowledgeViewSet)
 router.register(r"email-tasks", EmailTaskViewSet)
 router.register(r"email-drafts", EmailDraftViewSet)

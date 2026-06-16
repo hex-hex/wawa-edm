@@ -43,12 +43,13 @@ All models live in the `core` app. UUID PKs + timestamps throughout.
 |-------|--------|---------------|
 | `Company` | `name`, `website`, `address`, `about` (markdown) | — |
 | `Contact` | `first_name`, `middle_name`, `last_name`, `email`, `role`, `phone`, `priority` (enum), `gender` (enum), `behavior` (markdown), `story` (markdown) | `company` → `Company` |
-| `Knowledge` | `abstract`, `content` (markdown) | — |
+| `KnowledgeTag` | `name` (unique, max 127 chars) | — |
+| `Knowledge` | `abstract`, `content` (markdown) | `tags` ⇄ `KnowledgeTag` (M2M) |
 | `EmailTask` | `name`, `target`, `strategy` | `knowledges` ⇄ `Knowledge` (M2M) |
 | `EmailDraft` | `subject`, `pain_points` (markdown), `content` (HTML), `status`, `version` | `contact` → `Contact`, `task` → `EmailTask` |
 
 Relationships: `Company` 1—∗ `Contact` 1—∗ `EmailDraft`; `EmailTask` 1—∗ `EmailDraft`
-(the task that guided the draft); `EmailTask` ∗—∗ `Knowledge`.
+(the task that guided the draft); `EmailTask` ∗—∗ `Knowledge`; `Knowledge` ∗—∗ `KnowledgeTag`.
 `EmailDraft.status` is one of `draft` (default) / `scheduled` / `sent` / `failed`.
 `Contact.priority` is one of `hot` / `warm` / `cold` and `Contact.gender` is one of
 `male` / `female` / `other`. `middle_name`, `email`, `role`, `phone`, `priority`, `gender`,
@@ -63,19 +64,48 @@ Base path: `/api/` (browsable API enabled in DEBUG). All endpoints support
 |----------|----------|
 | Companies | `/api/companies/` |
 | Contacts | `/api/contacts/` |
+| Knowledge tags | `/api/knowledge-tags/` |
 | Knowledge | `/api/knowledge/` |
 | Email tasks | `/api/email-tasks/` |
 | Email drafts | `/api/email-drafts/` |
 
-**Filtering** — enum fields support exact-match query params (via `django-filter`):
+**Filtering** — enum fields and relations support exact-match query params (via `django-filter`):
 
 ```
-GET /api/email-drafts/?status=draft        # exact match: draft | scheduled | sent | failed
-GET /api/email-drafts/?status=sent&search=welcome   # combine with ?search=
-GET /api/contacts/?priority=hot            # exact match: hot | warm | cold
-GET /api/contacts/?gender=female           # exact match: male | female | other
-GET /api/email-drafts/?task=<uuid>         # drafts written under a given EmailTask
+GET /api/email-drafts/?status=draft               # exact match: draft | scheduled | sent | failed
+GET /api/email-drafts/?status=sent&search=welcome # combine with ?search=
+GET /api/contacts/?priority=hot                   # exact match: hot | warm | cold
+GET /api/contacts/?gender=female                  # exact match: male | female | other
+GET /api/email-drafts/?task=<uuid>                # drafts written under a given EmailTask
+GET /api/knowledge/?tags=<uuid>                   # knowledge with a specific tag (by id)
+GET /api/knowledge/?tags__name=产品               # knowledge with a specific tag (by exact name)
+GET /api/knowledge/?tags__name__icontains=产      # knowledge with a tag name containing substring
 ```
+
+**Knowledge tag usage:**
+
+```
+# Create a tag
+POST /api/knowledge-tags/
+{"name": "产品介绍"}
+
+# List all tags
+GET /api/knowledge-tags/
+
+# Attach tags to a knowledge snippet (pass a list of tag UUIDs)
+POST /api/knowledge/
+{"abstract": "...", "content": "...", "tags": ["<tag-uuid>", "<tag-uuid-2>"]}
+
+# Update tags on an existing snippet
+PATCH /api/knowledge/<uuid>/
+{"tags": ["<tag-uuid>"]}
+
+# Filter knowledge by tag
+GET /api/knowledge/?tags__name=产品介绍
+```
+
+The response for each knowledge snippet includes both `tags` (list of UUIDs, writable) and
+`tag_names` (list of name strings, read-only).
 
 An invalid value (e.g. `?status=bogus`) returns `400`.
 
@@ -115,15 +145,18 @@ The app is then at <http://localhost:8000/> — API under `/api/`, admin under `
 
 ### Environment variables
 
-Read from `.env` (see [`.env.example`](.env.example)):
+Set in the `environment` block of `docker-compose.yml`:
 
-| Key | Description | Local default |
-|-----|-------------|---------------|
-| `DJANGO_SECRET_KEY` | Django secret key | insecure dev key |
+| Key | Description | Default in compose |
+|-----|-------------|--------------------|
+| `DJANGO_SECRET_KEY` | Django secret key | (set explicitly) |
 | `DJANGO_DEBUG` | Debug mode (`True`/`False`) | `False` |
-| `DJANGO_ALLOWED_HOSTS` | Comma-separated hosts | `localhost,127.0.0.1` |
-| `DATABASE_URL` | Postgres connection URL | `postgres://postgres:postgres@127.0.0.1:5432/wawa_edm` |
-| `REDIS_URL` | Redis connection URL | `redis://127.0.0.1:6379/1` |
+| `DJANGO_ALLOWED_HOSTS` | Comma-separated hosts | includes `edm.u-me.studio` and LAN IPs |
+| `CSRF_TRUSTED_ORIGINS` | Comma-separated trusted origins for CSRF | `https://edm.u-me.studio` |
+| `DATABASE_URL` | Postgres connection URL | via `host.docker.internal` |
+| `REDIS_URL` | Redis connection URL | via `host.docker.internal` |
+| `API_ALLOWED_IPS` | CIDRs allowed to call the REST API | Docker / LAN / Tailscale ranges |
+| `TRUSTED_PROXIES` | CIDRs of trusted reverse proxies (XFF) | same as `API_ALLOWED_IPS` |
 
 ## Running with Docker
 
@@ -137,10 +170,10 @@ docker compose logs -f            # follow logs
 docker compose down               # stop
 ```
 
-The service is published on **host port 8010** → <http://localhost:8010/>
-(host `8000` was in use in the reference environment; change the `ports` mapping in
-`docker-compose.yml` if you prefer `8000`). Override `DATABASE_URL` / `REDIS_URL` in the
-compose `environment` block to point at a different database or cache.
+The service is published on **host port 8030** → <http://localhost:8030/>.
+All environment variables are set directly in the `environment` block of `docker-compose.yml` —
+no `.env` file is used. Override `DATABASE_URL` / `REDIS_URL` there to point at a different
+database or cache.
 
 ## Admin previews
 
