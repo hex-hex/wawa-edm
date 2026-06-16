@@ -551,12 +551,78 @@ body.login {
     max-width: 100%;
   }
 
-  /* Changelist — long `nowrap` datetime columns push the results table wider
-     than the card, causing horizontal scroll and clipped columns. Let cells
-     wrap and tighten padding so the table fits on mobile. */
-  #changelist #result_list th,
-  #changelist #result_list td {
-    padding: 10px 8px;
+  /* Changelist — universal responsive layout for EVERY list (current or
+     future, with no per-model code). On mobile each row becomes a stacked card
+     and each cell a "Column: value" line. The column labels are copied onto
+     the cells from the table headers by wawa_responsive_list.js. */
+
+  /* Inset the toolbar and action bar from the module edges so nothing hugs the
+     border. The `body` prefix beats Django's later same-specificity
+     `#changelist .actions` rule; cards (below) use margin to avoid overflow. */
+  #changelist #toolbar,
+  body #changelist .actions {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  #result_list thead {
+    display: none;
+  }
+
+  #result_list,
+  #result_list tbody,
+  #result_list tbody tr,
+  #result_list tbody tr > th,
+  #result_list tbody tr > td {
+    display: block;
+    width: auto;
+  }
+
+  #result_list tbody tr {
+    margin: 0 12px 12px;
+    border: 1px solid var(--wawa-border);
+    border-radius: 12px;
+    background: var(--wawa-surface);
+    overflow: hidden;
+  }
+
+  #result_list tbody tr > th,
+  #result_list tbody tr > td {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 9px 14px;
+    border: 0;
+    border-bottom: 1px solid var(--wawa-hairline);
+    text-align: right;
     white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  #result_list tbody tr > :last-child {
+    border-bottom: 0;
+  }
+
+  #result_list tbody tr > [data-label]::before {
+    content: attr(data-label);
+    flex: 0 0 auto;
+    max-width: 45%;
+    color: var(--wawa-muted);
+    font-size: 11px;
+    font-weight: 750;
+    letter-spacing: 0.04em;
+    text-align: left;
+    text-transform: uppercase;
+    white-space: normal;
+  }
+
+  /* The row-select checkbox cell has no column header — show it left-aligned
+     at the top of the card without a label. */
+  #result_list tbody tr > .action-checkbox-column {
+    justify-content: flex-start;
+  }
+  #result_list tbody tr > .action-checkbox-column::before {
+    content: none;
   }
 }
