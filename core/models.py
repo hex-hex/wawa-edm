@@ -37,9 +37,9 @@ class Contact(models.Model):
         on_delete=models.CASCADE,
         related_name="contacts",
     )
-    first_name = models.CharField(max_length=150)
+    first_name = models.CharField(max_length=150, blank=True, null=True)
     middle_name = models.CharField(max_length=150, blank=True, null=True)
-    last_name = models.CharField(max_length=150)
+    last_name = models.CharField(max_length=150, blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
     role = models.CharField(max_length=63, blank=True, null=True)
     phone = models.CharField(max_length=63, blank=True, null=True)
