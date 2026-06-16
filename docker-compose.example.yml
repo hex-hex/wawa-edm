@@ -4,10 +4,8 @@ services:
     image: wawa-edm:latest
     container_name: wawa-edm-web
     ports:
-      # Host 8030 -> container 8000. (Host 8000 is taken by another local
-      # process; 8010 is taken by wawa_bt-web-1; 8020 is taken by
-      # host-docker-internal usage; 8030 is free since 2026-06-16 for wawa-edm.)
-      - "8030:8000"
+      # Host port -> container 8000. Change the host port to any free port.
+      - "8000:8000"
     environment:
       DJANGO_SECRET_KEY: "django-insecure-change-me-in-production"
       DJANGO_DEBUG: "False"

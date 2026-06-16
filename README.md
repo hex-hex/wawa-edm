@@ -157,7 +157,7 @@ Set in the `environment` block of `docker-compose.yml`:
 |-----|-------------|--------------------|
 | `DJANGO_SECRET_KEY` | Django secret key | (set explicitly) |
 | `DJANGO_DEBUG` | Debug mode (`True`/`False`) | `False` |
-| `DJANGO_ALLOWED_HOSTS` | Comma-separated hosts | includes `your-domain.example` and LAN IPs |
+| `DJANGO_ALLOWED_HOSTS` | Comma-separated hosts | `localhost,127.0.0.1` (+ your domain) |
 | `CSRF_TRUSTED_ORIGINS` | Comma-separated trusted origins for CSRF | `https://your-domain.example` |
 | `DATABASE_URL` | Postgres connection URL | via `host.docker.internal` |
 | `REDIS_URL` | Redis connection URL | via `host.docker.internal` |
