@@ -76,11 +76,17 @@ GET /api/email-drafts/?status=draft               # exact match: draft | schedul
 GET /api/email-drafts/?status=sent&search=welcome # combine with ?search=
 GET /api/contacts/?priority=hot                   # exact match: hot | warm | cold
 GET /api/contacts/?gender=female                  # exact match: male | female | other
+GET /api/companies/?about_empty=true              # companies whose about is null or blank
+GET /api/contacts/?story_empty=true               # contacts whose story is null or blank
 GET /api/email-drafts/?task=<uuid>                # drafts written under a given EmailTask
 GET /api/knowledge/?tags=<uuid>                   # knowledge with a specific tag (by id)
 GET /api/knowledge/?tags__name=产品               # knowledge with a specific tag (by exact name)
 GET /api/knowledge/?tags__name__icontains=产      # knowledge with a tag name containing substring
 ```
+
+The boolean `about_empty` / `story_empty` filters treat a field as empty when it is `NULL`
+**or** an empty string (`""`). Use `=true` for missing/blank values and `=false` for records
+that have content — handy for finding records that still need enrichment.
 
 **Knowledge tag usage:**
 
