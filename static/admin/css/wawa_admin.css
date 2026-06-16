@@ -501,11 +501,62 @@ body.login {
   }
 
   .main > .content {
-    padding: 22px 16px 32px;
+    padding: 22px 10px 32px;
+  }
+
+  /* Django's responsive.css gives #content its own 15px gutter (ID selector,
+     loaded after this file) on top of the .content padding, double-insetting
+     the form on narrow screens. The `body` prefix wins specificity so we can
+     drop the redundant horizontal part and let the card use the screen width. */
+  body #content {
+    padding-right: 0;
+    padding-left: 0;
   }
 
   div.breadcrumbs {
     padding-right: 16px;
     padding-left: 16px;
+  }
+
+  /* Forms — Django's responsive.css (which loads AFTER this file) sizes rows
+     with `width: calc(100vw - 30px)` and `padding: 15px 0`, ignoring this
+     theme's padded card so fields overflow / hug the module edges. The #content
+     prefix raises specificity so these win regardless of load order: refit each
+     row to the card and add consistent horizontal padding. */
+  #content .form-row {
+    box-sizing: border-box;
+    padding: 14px 12px;
+  }
+
+  #content .aligned .form-row > div {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  #content .form-row input[type="text"],
+  #content .form-row input[type="url"],
+  #content .form-row input[type="email"],
+  #content .form-row input[type="tel"],
+  #content .form-row input[type="number"],
+  #content .form-row input[type="password"],
+  #content .form-row select,
+  #content .form-row textarea,
+  #content .form-row .vTextField,
+  #content .form-row .vURLField,
+  #content .form-row .readonly,
+  #content .form-row .wawa-preview {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  /* Changelist — long `nowrap` datetime columns push the results table wider
+     than the card, causing horizontal scroll and clipped columns. Let cells
+     wrap and tighten padding so the table fits on mobile. */
+  #changelist #result_list th,
+  #changelist #result_list td {
+    padding: 10px 8px;
+    white-space: normal;
   }
 }
