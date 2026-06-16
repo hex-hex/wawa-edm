@@ -403,6 +403,10 @@ select:focus,
   background: var(--wawa-surface-muted);
 }
 
+#nav-sidebar .module {
+  margin: 0 10px 10px;
+}
+
 .toggle-nav-sidebar {
   border-right-color: var(--wawa-border);
   background: var(--wawa-surface-muted);
