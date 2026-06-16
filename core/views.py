@@ -1,12 +1,13 @@
 from rest_framework import viewsets
 
-from .models import Company, Contact, EmailDraft, EmailTask, Knowledge
+from .models import Company, Contact, EmailDraft, EmailTask, Knowledge, KnowledgeTag
 from .serializers import (
     CompanySerializer,
     ContactSerializer,
     EmailDraftSerializer,
     EmailTaskSerializer,
     KnowledgeSerializer,
+    KnowledgeTagSerializer,
 )
 
 
@@ -27,11 +28,20 @@ class ContactViewSet(viewsets.ModelViewSet):
     search_fields = ["first_name", "middle_name", "last_name", "email", "role", "phone", "behavior", "company__name"]
 
 
+class KnowledgeTagViewSet(viewsets.ModelViewSet):
+    """CRUD API for knowledge tags."""
+
+    queryset = KnowledgeTag.objects.all()
+    serializer_class = KnowledgeTagSerializer
+    search_fields = ["name"]
+
+
 class KnowledgeViewSet(viewsets.ModelViewSet):
     """CRUD API for knowledge snippets."""
 
-    queryset = Knowledge.objects.all()
+    queryset = Knowledge.objects.prefetch_related("tags").all()
     serializer_class = KnowledgeSerializer
+    filterset_fields = {"tags": ["exact"], "tags__name": ["exact", "icontains"]}
     search_fields = ["abstract", "content"]
 
 

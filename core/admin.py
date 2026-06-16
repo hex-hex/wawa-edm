@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.db.models import OuterRef, Subquery
 
 from .admin_render import rendered_field
-from .models import Company, Contact, EmailDraft, EmailTask, Knowledge
+from .models import Company, Contact, EmailDraft, EmailTask, Knowledge, KnowledgeTag
 
 admin.site.site_header = "Wawa EDM"
 admin.site.site_title = "Wawa EDM Admin"
@@ -32,11 +32,19 @@ class ContactAdmin(admin.ModelAdmin):
     readonly_fields = ("story_preview", "behavior_preview")
 
 
+@admin.register(KnowledgeTag)
+class KnowledgeTagAdmin(admin.ModelAdmin):
+    list_display = ("name",)
+    search_fields = ("name",)
+
+
 @admin.register(Knowledge)
 class KnowledgeAdmin(admin.ModelAdmin):
     list_display = ("abstract", "created_at", "updated_at")
+    list_filter = ("tags",)
     search_fields = ("abstract", "content")
     ordering = ("abstract",)
+    filter_horizontal = ("tags",)
     content_preview = rendered_field("content", fmt="markdown", label="Content")
     exclude = ("content",)
     readonly_fields = ("content_preview",)

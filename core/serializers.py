@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Company, Contact, EmailDraft, EmailTask, Knowledge
+from .models import Company, Contact, EmailDraft, EmailTask, Knowledge, KnowledgeTag
 
 
 class CompanySerializer(serializers.ModelSerializer):
@@ -35,10 +35,21 @@ class ContactSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "created_at", "updated_at"]
 
 
+class KnowledgeTagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = KnowledgeTag
+        fields = ["id", "name"]
+        read_only_fields = ["id"]
+
+
 class KnowledgeSerializer(serializers.ModelSerializer):
+    tag_names = serializers.SlugRelatedField(
+        source="tags", many=True, read_only=True, slug_field="name"
+    )
+
     class Meta:
         model = Knowledge
-        fields = ["id", "abstract", "content", "created_at", "updated_at"]
+        fields = ["id", "tags", "tag_names", "abstract", "content", "created_at", "updated_at"]
         read_only_fields = ["id", "created_at", "updated_at"]
 
 
