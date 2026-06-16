@@ -1,5 +1,6 @@
 from rest_framework import viewsets
 
+from .filters import CompanyFilter, ContactFilter
 from .models import Company, Contact, EmailDraft, EmailTask, Knowledge, KnowledgeTag
 from .serializers import (
     CompanySerializer,
@@ -16,6 +17,7 @@ class CompanyViewSet(viewsets.ModelViewSet):
 
     queryset = Company.objects.all()
     serializer_class = CompanySerializer
+    filterset_class = CompanyFilter
     search_fields = ["name", "about"]
 
 
@@ -24,7 +26,7 @@ class ContactViewSet(viewsets.ModelViewSet):
 
     queryset = Contact.objects.select_related("company").all()
     serializer_class = ContactSerializer
-    filterset_fields = ["priority", "gender"]
+    filterset_class = ContactFilter
     search_fields = ["first_name", "middle_name", "last_name", "email", "role", "phone", "behavior", "company__name"]
 
 
