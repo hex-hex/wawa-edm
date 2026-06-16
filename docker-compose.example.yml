@@ -17,6 +17,19 @@ services:
       # the Docker host (extra_hosts makes it work on Linux too).
       DATABASE_URL: "postgres://postgres:postgres@host.docker.internal:5432/wawa_edm"
       REDIS_URL: "redis://host.docker.internal:6379/1"
+      # API access is restricted to local IPs by core.permissions.LocalNetworkOnly.
+      # 127.0.0.0/8 and ::1 are always allowed. List additional CIDRs here to
+      # cover Docker bridge networks (172.16–31.x.x) and the host gateway IP.
+      # Do NOT include WireGuard peer ranges here — those are external relay IPs.
+      API_ALLOWED_IPS: "172.16.0.0/12"
+      # Trusted reverse proxies (Traefik, other Docker-local forwarders).
+      # When REMOTE_ADDR is in this list, the real client IP is read from
+      # X-Forwarded-For (right-to-left, skipping other trusted proxy hops).
+      # This correctly rejects traffic relayed via WireGuard from external clients,
+      # because the WireGuard relay IP is neither a trusted proxy nor an allowed IP.
+      # Prerequisite: the upstream proxy (nginx on the public server) must append
+      # X-Forwarded-For so that the real client IP is visible in the chain.
+      TRUSTED_PROXIES: "172.16.0.0/12"
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped

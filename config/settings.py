@@ -22,6 +22,9 @@ env = environ.Env(
 )
 environ.Env.read_env(BASE_DIR / ".env")
 
+API_ALLOWED_IPS = env.list("API_ALLOWED_IPS", default=[])
+TRUSTED_PROXIES = env.list("TRUSTED_PROXIES", default=[])
+
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env(
@@ -163,6 +166,9 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Django REST Framework
 REST_FRAMEWORK = {
+    "DEFAULT_PERMISSION_CLASSES": [
+        "core.permissions.LocalNetworkOnly",
+    ],
     "DEFAULT_FILTER_BACKENDS": [
         "django_filters.rest_framework.DjangoFilterBackend",
         "rest_framework.filters.SearchFilter",
