@@ -153,6 +153,12 @@ class EmailDraft(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["contact", "task", "version"],
+                name="unique_emaildraft_contact_task_version",
+            )
+        ]
 
     def __str__(self):
         return self.subject or f"Draft {self.pk}"
