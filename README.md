@@ -84,6 +84,8 @@ GET /api/email-drafts/?task=<uuid>                # drafts written under a given
 GET /api/email-drafts/?task_latest=<uuid>         # latest-version draft per contact under a given EmailTask
 GET /api/email-drafts/?knowledges=<uuid>          # drafts associated with a specific Knowledge snippet
 GET /api/knowledge/abstract/?search=产品          # compact id + abstract list for LLM selection
+GET /api/knowledge/abstract/?tags=<uuid>          # compact abstracts filtered by tag id
+GET /api/knowledge/abstract/?tags__name=产品       # compact abstracts filtered by exact tag name
 GET /api/knowledge/?tags=<uuid>                   # knowledge with a specific tag (by id)
 GET /api/knowledge/?tags__name=产品               # knowledge with a specific tag (by exact name)
 GET /api/knowledge/?tags__name__icontains=产      # knowledge with a tag name containing substring
@@ -108,6 +110,11 @@ GET /api/knowledge-tags/
 # List compact knowledge abstracts for LLM selection
 GET /api/knowledge/abstract/
 [{"id": "<knowledge-uuid>", "abstract": "..."}]
+
+# Narrow compact abstracts by tag, tag name, or search text
+GET /api/knowledge/abstract/?tags=<tag-uuid>
+GET /api/knowledge/abstract/?tags__name=产品介绍
+GET /api/knowledge/abstract/?tags__name__icontains=产品&search=pricing
 
 # Attach tags to a knowledge snippet (pass a list of tag UUIDs)
 POST /api/knowledge/
