@@ -46,10 +46,11 @@ All models live in the `core` app. UUID PKs + timestamps throughout.
 | `KnowledgeTag` | `name` (unique, max 127 chars) | — |
 | `Knowledge` | `abstract`, `content` (markdown) | `tags` ⇄ `KnowledgeTag` (M2M) |
 | `EmailTask` | `name`, `target`, `strategy` | `knowledges` ⇄ `Knowledge` (M2M) |
-| `EmailDraft` | `subject`, `pain_points` (markdown), `content` (HTML), `status`, `version` | `contact` → `Contact`, `task` → `EmailTask` |
+| `EmailDraft` | `subject`, `pain_points` (markdown), `content` (HTML), `status`, `version` | `contact` → `Contact`, `task` → `EmailTask`, `knowledges` ⇄ `Knowledge` (M2M) |
 
 Relationships: `Company` 1—∗ `Contact` 1—∗ `EmailDraft`; `EmailTask` 1—∗ `EmailDraft`
-(the task that guided the draft); `EmailTask` ∗—∗ `Knowledge`; `Knowledge` ∗—∗ `KnowledgeTag`.
+(the task that guided the draft); `EmailTask` ∗—∗ `Knowledge`; `EmailDraft` ∗—∗ `Knowledge`;
+`Knowledge` ∗—∗ `KnowledgeTag`.
 `EmailDraft.status` is one of `draft` (default) / `scheduled` / `sent` / `failed`.
 `Contact.priority` is one of `hot` / `warm` / `cold` and `Contact.gender` is one of
 `male` / `female` / `other`. Fields marked \* are optional on `Contact`; only `company`
@@ -66,6 +67,7 @@ Base path: `/api/` (browsable API enabled in DEBUG). All endpoints support
 | Contacts | `/api/contacts/` |
 | Knowledge tags | `/api/knowledge-tags/` |
 | Knowledge | `/api/knowledge/` |
+| Knowledge abstracts | `/api/knowledge/abstract/` |
 | Email tasks | `/api/email-tasks/` |
 | Email drafts | `/api/email-drafts/` |
 
@@ -79,6 +81,9 @@ GET /api/contacts/?gender=female                  # exact match: male | female |
 GET /api/companies/?about_empty=true              # companies whose about is null or blank
 GET /api/contacts/?story_empty=true               # contacts whose story is null or blank
 GET /api/email-drafts/?task=<uuid>                # drafts written under a given EmailTask
+GET /api/email-drafts/?task_latest=<uuid>         # latest-version draft per contact under a given EmailTask
+GET /api/email-drafts/?knowledges=<uuid>          # drafts associated with a specific Knowledge snippet
+GET /api/knowledge/abstract/?search=产品          # compact id + abstract list for LLM selection
 GET /api/knowledge/?tags=<uuid>                   # knowledge with a specific tag (by id)
 GET /api/knowledge/?tags__name=产品               # knowledge with a specific tag (by exact name)
 GET /api/knowledge/?tags__name__icontains=产      # knowledge with a tag name containing substring
@@ -87,6 +92,8 @@ GET /api/knowledge/?tags__name__icontains=产      # knowledge with a tag name c
 The boolean `about_empty` / `story_empty` filters treat a field as empty when it is `NULL`
 **or** an empty string (`""`). Use `=true` for missing/blank values and `=false` for records
 that have content — handy for finding records that still need enrichment.
+The `task_latest` filter mirrors the admin task filter: for the selected task, it returns
+only the highest `version` `EmailDraft` for each contact.
 
 **Knowledge tag usage:**
 
@@ -98,6 +105,10 @@ POST /api/knowledge-tags/
 # List all tags
 GET /api/knowledge-tags/
 
+# List compact knowledge abstracts for LLM selection
+GET /api/knowledge/abstract/
+[{"id": "<knowledge-uuid>", "abstract": "..."}]
+
 # Attach tags to a knowledge snippet (pass a list of tag UUIDs)
 POST /api/knowledge/
 {"abstract": "...", "content": "...", "tags": ["<tag-uuid>", "<tag-uuid-2>"]}
@@ -106,12 +117,22 @@ POST /api/knowledge/
 PATCH /api/knowledge/<uuid>/
 {"tags": ["<tag-uuid>"]}
 
+# Create or update an email draft with associated knowledge snippets
+POST /api/email-drafts/
+{"contact": "<contact-uuid>", "task": "<task-uuid>", "subject": "...", "version": 1, "knowledge_ids": ["<knowledge-uuid>"]}
+
+PATCH /api/email-drafts/<uuid>/
+{"knowledge_ids": ["<knowledge-uuid>", "<knowledge-uuid-2>"]}
+
 # Filter knowledge by tag
 GET /api/knowledge/?tags__name=产品介绍
 ```
 
 The response for each knowledge snippet includes both `tags` (list of UUIDs, writable) and
 `tag_names` (list of name strings, read-only).
+Email tasks accept `knowledges` as UUIDs on write and return full nested knowledge objects
+on read. Email drafts return nested `knowledges` on read and use `knowledge_ids` for
+POST/PATCH updates.
 
 An invalid value (e.g. `?status=bogus`) returns `400`.
 

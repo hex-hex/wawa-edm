@@ -1,7 +1,20 @@
 import django_filters
-from django.db.models import Q
+from django.db.models import OuterRef, Q, Subquery
 
-from .models import Company, Contact
+from .models import Company, Contact, EmailDraft, EmailTask
+
+
+def latest_drafts_per_contact_for_task(queryset, task):
+    task_id = getattr(task, "pk", task)
+    if not task_id:
+        return queryset
+
+    latest_version = (
+        EmailDraft.objects.filter(task_id=task_id, contact_id=OuterRef("contact_id"))
+        .order_by("-version")
+        .values("version")[:1]
+    )
+    return queryset.filter(task_id=task_id, version=Subquery(latest_version))
 
 
 class CompanyFilter(django_filters.FilterSet):
@@ -36,3 +49,18 @@ class ContactFilter(django_filters.FilterSet):
             return queryset
         empty = Q(story__isnull=True) | Q(story__exact="")
         return queryset.filter(empty) if value else queryset.exclude(empty)
+
+
+class EmailDraftFilter(django_filters.FilterSet):
+    task_latest = django_filters.ModelChoiceFilter(
+        queryset=EmailTask.objects.all(),
+        method="filter_task_latest",
+        label="task latest per contact",
+    )
+
+    class Meta:
+        model = EmailDraft
+        fields = ["status", "task", "knowledges", "task_latest"]
+
+    def filter_task_latest(self, queryset, name, value):
+        return latest_drafts_per_contact_for_task(queryset, value)

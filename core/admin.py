@@ -1,7 +1,7 @@
 from django.contrib import admin
-from django.db.models import OuterRef, Subquery
 
 from .admin_render import rendered_field
+from .filters import latest_drafts_per_contact_for_task
 from .models import Company, Contact, EmailDraft, EmailTask, Knowledge, KnowledgeTag
 
 admin.site.site_header = "Wawa EDM"
@@ -68,16 +68,7 @@ class TaskLatestPerContactFilter(admin.SimpleListFilter):
         return [(t.pk, str(t)) for t in EmailTask.objects.all()]
 
     def queryset(self, request, queryset):
-        task_id = self.value()
-        if not task_id:
-            return queryset
-        base = queryset.filter(task_id=task_id)
-        latest_version = (
-            EmailDraft.objects.filter(task_id=task_id, contact=OuterRef("contact"))
-            .order_by("-version")
-            .values("version")[:1]
-        )
-        return base.filter(version=Subquery(latest_version))
+        return latest_drafts_per_contact_for_task(queryset, self.value())
 
 
 @admin.register(EmailDraft)
@@ -86,6 +77,7 @@ class EmailDraftAdmin(admin.ModelAdmin):
     list_filter = ("status", TaskLatestPerContactFilter)
     search_fields = ("subject", "content")
     autocomplete_fields = ("contact", "task")
+    filter_horizontal = ("knowledges",)
     pain_points_preview = rendered_field("pain_points", fmt="markdown", label="Pain points")
     content_preview = rendered_field("content", fmt="html", label="Content (HTML)")
     exclude = ("pain_points", "content")

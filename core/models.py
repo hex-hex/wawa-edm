@@ -139,6 +139,11 @@ class EmailDraft(models.Model):
         blank=True,
         help_text="The EmailTask this draft was written under the guidance of.",
     )
+    knowledges = models.ManyToManyField(
+        Knowledge,
+        related_name="email_drafts",
+        blank=True,
+    )
     subject = models.CharField(max_length=255, blank=True, null=True)
     pain_points = models.TextField(blank=True, null=True)
     content = models.TextField(blank=True, null=True)
