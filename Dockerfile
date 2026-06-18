@@ -29,6 +29,6 @@ RUN python manage.py collectstatic --noinput \
 
 EXPOSE 8000
 
-# Entrypoint runs migrations, then execs the CMD (uvicorn ASGI server).
+# Entrypoint cleans constraint-conflicting data, runs migrations, then execs the CMD.
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
 CMD ["uvicorn", "config.asgi:application", "--host", "0.0.0.0", "--port", "8000"]

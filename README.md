@@ -195,8 +195,8 @@ Set in the `environment` block of `docker-compose.yml`:
 ## Running with Docker
 
 The image builds a runnable app (deps via `uv`, static collected, served by Uvicorn); the
-entrypoint runs migrations on startup. `docker-compose.yml` reuses the host's Postgres/Redis
-via `host.docker.internal`.
+entrypoint runs `fix_data`, then migrations on startup. `docker-compose.yml` reuses the host's
+Postgres/Redis via `host.docker.internal`.
 
 ```bash
 docker compose up -d --build      # build and start
