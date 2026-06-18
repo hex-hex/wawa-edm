@@ -39,7 +39,7 @@ class ContactConstraintTests(TestCase):
                 company=self.company,
                 first_name="Grace",
                 last_name="Hopper",
-                email="ada@example.com",
+                email="ADA@example.com",
             )
 
     def test_empty_email_can_be_reused_for_different_name_combinations(self):

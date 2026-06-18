@@ -1,6 +1,7 @@
 import uuid
 
 from django.db import models
+from django.db.models.functions import Lower
 
 from .company import Company
 
@@ -54,7 +55,7 @@ class Contact(models.Model):
                 nulls_distinct=False,
             ),
             models.UniqueConstraint(
-                fields=["email"],
+                Lower("email"),
                 condition=models.Q(email__isnull=False) & ~models.Q(email=""),
                 name="unique_contact_non_empty_email",
             ),

@@ -56,6 +56,55 @@ def duplicate_groups(rows, key_func):
         yield key, keep, losers
 
 
+def non_empty_email_key(row):
+    return row["email"].lower()
+
+
+def contact_duplicate_groups(rows):
+    rows = list(rows)
+    to_delete = set()
+    duplicate_group_details = []
+
+    non_empty_email_rows = [
+        row for row in rows if row["email"] is not None and row["email"] != ""
+    ]
+    for email, keep, losers in duplicate_groups(
+        non_empty_email_rows,
+        key_func=non_empty_email_key,
+    ):
+        to_delete.update(row["id"] for row in losers)
+        duplicate_group_details.append(
+            (
+                "unique_contact_non_empty_email",
+                f"lower_email={email!r}",
+                keep,
+                losers,
+            )
+        )
+
+    remaining_rows = [row for row in rows if row["id"] not in to_delete]
+    for name_email, keep, losers in duplicate_groups(
+        remaining_rows,
+        key_func=lambda row: (
+            row["first_name"],
+            row["middle_name"],
+            row["last_name"],
+            row["email"],
+        ),
+    ):
+        to_delete.update(row["id"] for row in losers)
+        duplicate_group_details.append(
+            (
+                "unique_contact_name_email",
+                f"key={name_email!r}",
+                keep,
+                losers,
+            )
+        )
+
+    return to_delete, duplicate_group_details
+
+
 class Command(BaseCommand):
     help = (
         "Remove rows that would violate unique constraints, keeping the newest "
@@ -123,44 +172,17 @@ class Command(BaseCommand):
             )
         )
 
-        to_delete = set()
-        duplicate_group_count = 0
-
-        non_empty_email_rows = [
-            row for row in rows if row["email"] is not None and row["email"] != ""
-        ]
-        for email, keep, losers in duplicate_groups(
-            non_empty_email_rows,
-            key_func=lambda row: row["email"],
-        ):
-            duplicate_group_count += 1
-            to_delete.update(row["id"] for row in losers)
+        to_delete, duplicate_group_details = contact_duplicate_groups(rows)
+        for constraint_name, key_label, keep, losers in duplicate_group_details:
             self.stdout.write(
-                "Contact unique_contact_non_empty_email "
-                f"email={email!r}: {len(losers) + 1} rows -> "
-                f"keep {keep['id']}, delete {len(losers)}"
-            )
-
-        remaining_rows = [row for row in rows if row["id"] not in to_delete]
-        for name_email, keep, losers in duplicate_groups(
-            remaining_rows,
-            key_func=lambda row: (
-                row["first_name"],
-                row["middle_name"],
-                row["last_name"],
-                row["email"],
-            ),
-        ):
-            duplicate_group_count += 1
-            to_delete.update(row["id"] for row in losers)
-            self.stdout.write(
-                "Contact unique_contact_name_email "
-                f"key={name_email!r}: {len(losers) + 1} rows -> "
+                f"Contact {constraint_name} {key_label}: {len(losers) + 1} rows -> "
                 f"keep {keep['id']}, delete {len(losers)}"
             )
 
         self.stdout.write("")
-        self.stdout.write(f"Contact duplicate groups : {duplicate_group_count}")
+        self.stdout.write(
+            f"Contact duplicate groups : {len(duplicate_group_details)}"
+        )
         self.stdout.write(f"Contact rows to delete   : {len(to_delete)}")
 
         if not to_delete or dry_run:

@@ -59,7 +59,8 @@ and `story` are required.
 Unique constraints:
 
 - `KnowledgeTag.name` is unique.
-- `Contact.email` is unique when it is neither `NULL` nor an empty string (`""`).
+- `Contact.email` is case-insensitively unique when it is neither `NULL` nor an empty
+  string (`""`).
 - `Contact(first_name, middle_name, last_name, email)` is unique; `NULL` values are treated
   as equal for this combined key.
 - `EmailDraft(contact, task, version)` is unique.
