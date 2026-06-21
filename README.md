@@ -93,6 +93,7 @@ GET /api/contacts/?priority=hot                   # exact match: hot | warm | co
 GET /api/contacts/?gender=female                  # exact match: male | female | other
 GET /api/companies/?about_empty=true              # companies whose about is null or blank
 GET /api/contacts/?story_empty=true               # contacts whose story is null or blank
+GET /api/contacts/?has_email_draft=false          # contacts that do not have an email draft
 GET /api/email-drafts/?task=<uuid>                # drafts written under a given EmailTask
 GET /api/email-drafts/?task_latest=<uuid>         # latest-version draft per contact under a given EmailTask
 GET /api/email-drafts/?knowledges=<uuid>          # drafts associated with a specific Knowledge snippet

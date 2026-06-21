@@ -1,5 +1,5 @@
 import django_filters
-from django.db.models import OuterRef, Q, Subquery
+from django.db.models import Exists, OuterRef, Q, Subquery
 
 from .models import Company, Contact, EmailDraft, EmailTask
 
@@ -39,16 +39,31 @@ class ContactFilter(django_filters.FilterSet):
         method="filter_story_empty",
         label="story is null or blank",
     )
+    has_email_draft = django_filters.BooleanFilter(
+        method="filter_has_email_draft",
+        label="has email draft",
+    )
 
     class Meta:
         model = Contact
-        fields = ["priority", "gender"]
+        fields = ["priority", "gender", "has_email_draft"]
 
     def filter_story_empty(self, queryset, name, value):
         if value is None:
             return queryset
         empty = Q(story__isnull=True) | Q(story__exact="")
         return queryset.filter(empty) if value else queryset.exclude(empty)
+
+    def filter_has_email_draft(self, queryset, name, value):
+        if value is None:
+            return queryset
+
+        email_draft_exists = EmailDraft.objects.filter(contact_id=OuterRef("pk"))
+        return (
+            queryset.filter(Exists(email_draft_exists))
+            if value
+            else queryset.filter(~Exists(email_draft_exists))
+        )
 
 
 class EmailDraftFilter(django_filters.FilterSet):
