@@ -41,6 +41,7 @@ class Contact(models.Model):
         blank=True,
         null=True,
     )
+    subscribed = models.BooleanField(default=True)
     behavior = models.TextField(blank=True, null=True)
     story = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
