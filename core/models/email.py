@@ -1,6 +1,7 @@
 import uuid
 
 from django.db import models
+from django.db.models import Max
 
 from .contact import Contact
 from .knowledge import Knowledge
@@ -72,6 +73,13 @@ class EmailDraft(models.Model):
                 name="unique_emaildraft_contact_task_version",
             )
         ]
+
+    @classmethod
+    def next_version_for(cls, *, contact, task):
+        max_version = cls.objects.filter(contact=contact, task=task).aggregate(
+            max_version=Max("version")
+        )["max_version"]
+        return (max_version or 0) + 1
 
     def __str__(self):
         return self.subject or f"Draft {self.pk}"

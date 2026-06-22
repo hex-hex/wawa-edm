@@ -110,6 +110,8 @@ The boolean `about_empty` / `story_empty` filters treat a field as empty when it
 that have content — handy for finding records that still need enrichment.
 The `task_latest` filter mirrors the admin task filter: for the selected task, it returns
 only the highest `version` `EmailDraft` for each contact.
+`EmailDraft.version` is read-only in the API. POST generates the next version within the
+same `(contact, task)` group, and write requests that include `version` return `400`.
 
 **Knowledge tag usage:**
 
@@ -140,7 +142,7 @@ PATCH /api/knowledge/<uuid>/
 
 # Create or update an email draft with associated knowledge snippets
 POST /api/email-drafts/
-{"contact": "<contact-uuid>", "task": "<task-uuid>", "subject": "...", "version": 1, "knowledge_ids": ["<knowledge-uuid>"]}
+{"contact": "<contact-uuid>", "task": "<task-uuid>", "subject": "...", "knowledge_ids": ["<knowledge-uuid>"]}
 
 PATCH /api/email-drafts/<uuid>/
 {"knowledge_ids": ["<knowledge-uuid>", "<knowledge-uuid-2>"]}

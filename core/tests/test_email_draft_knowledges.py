@@ -33,7 +33,6 @@ class EmailDraftAPIKnowledgeTests(EmailDraftAPITestMixin, TestCase):
                     "contact": str(self.contact_two.pk),
                     "task": str(self.task.pk),
                     "subject": "Created with knowledge",
-                    "version": 2,
                     "knowledge_ids": [str(self.knowledge.pk)],
                 }
             ),

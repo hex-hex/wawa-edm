@@ -34,7 +34,35 @@ class EmailDraftSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["id", "created_at", "updated_at"]
+        read_only_fields = ["id", "version", "created_at", "updated_at"]
+        validators = []
+
+    def to_internal_value(self, data):
+        if "version" in data:
+            raise serializers.ValidationError(
+                {"version": "This field is generated automatically."}
+            )
+        return super().to_internal_value(data)
+
+    def create(self, validated_data):
+        validated_data["version"] = EmailDraft.next_version_for(
+            contact=validated_data["contact"],
+            task=validated_data.get("task"),
+        )
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        contact = validated_data.get("contact", instance.contact)
+        task = validated_data.get("task", instance.task)
+        task_id = task.pk if task else None
+
+        if contact.pk != instance.contact_id or task_id != instance.task_id:
+            validated_data["version"] = EmailDraft.next_version_for(
+                contact=contact,
+                task=task,
+            )
+
+        return super().update(instance, validated_data)
 
     def get_contact_name(self, obj):
         return str(obj.contact)
