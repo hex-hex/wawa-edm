@@ -38,6 +38,32 @@ class EmailDraftAPIVersionTests(EmailDraftAPITestMixin, TestCase):
         self.assertEqual(other_task_response.status_code, 201)
         self.assertEqual(other_task_response.json()["version"], 1)
 
+    def test_post_preserves_sent_status_on_older_versions(self):
+        EmailDraft.objects.filter(pk=self.contact_one_old.pk).update(
+            status=EmailDraft.Status.SENT
+        )
+
+        response = self.client.post(
+            "/api/email-drafts/",
+            data=json.dumps(
+                {
+                    "contact": str(self.contact_one.pk),
+                    "task": str(self.task.pk),
+                    "subject": "Newest after sent",
+                }
+            ),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.json()["version"], 3)
+        self.assertEqual(response.json()["status"], EmailDraft.Status.SCHEDULED)
+
+        self.contact_one_old.refresh_from_db()
+        self.contact_one_latest.refresh_from_db()
+        self.assertEqual(self.contact_one_old.status, EmailDraft.Status.SENT)
+        self.assertEqual(self.contact_one_latest.status, EmailDraft.Status.DRAFT)
+
     def test_post_rejects_supplied_version(self):
         response = self.client.post(
             "/api/email-drafts/",

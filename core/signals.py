@@ -10,7 +10,7 @@ def sync_email_draft_statuses(sender, instance, **kwargs):
     """Keep one EmailDraft 'scheduled' per (contact, task) group.
 
     Within a (contact, task) combination, the highest-version draft becomes
-    ``scheduled`` and every lower-version draft becomes ``draft``.
+    ``scheduled`` and every lower-version non-sent draft becomes ``draft``.
 
     All writes go through queryset ``.update()``, which does **not** emit
     ``post_save`` — so this handler never re-triggers itself.
@@ -27,13 +27,14 @@ def sync_email_draft_statuses(sender, instance, **kwargs):
     if max_version is None:
         return
 
-    # Highest version -> scheduled; everything below -> draft. exclude() keeps
-    # us from writing rows that already hold the target status.
+    # Highest version -> scheduled; everything below -> draft unless it was
+    # already sent. exclude() keeps us from writing rows that already hold the
+    # target status.
     group.filter(version=max_version).exclude(
         status=EmailDraft.Status.SCHEDULED
     ).update(status=EmailDraft.Status.SCHEDULED)
     group.filter(version__lt=max_version).exclude(
-        status=EmailDraft.Status.DRAFT
+        status__in=[EmailDraft.Status.DRAFT, EmailDraft.Status.SENT]
     ).update(status=EmailDraft.Status.DRAFT)
 
     # Reflect the new status on the in-memory instance so the API/admin response
