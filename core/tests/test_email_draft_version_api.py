@@ -106,6 +106,18 @@ class EmailDraftAPIVersionTests(EmailDraftAPITestMixin, TestCase):
         self.assertEqual(self.contact_one_latest.task, self.other_task)
         self.assertEqual(self.contact_one_latest.version, 2)
 
+    def test_patch_can_mark_latest_draft_as_sent(self):
+        response = self.client.patch(
+            f"/api/email-drafts/{self.contact_one_latest.pk}/",
+            data=json.dumps({"status": EmailDraft.Status.SENT.value}),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["status"], EmailDraft.Status.SENT)
+        self.contact_one_latest.refresh_from_db()
+        self.assertEqual(self.contact_one_latest.status, EmailDraft.Status.SENT)
+
     def test_put_rejects_supplied_version(self):
         response = self.client.put(
             f"/api/email-drafts/{self.contact_one_latest.pk}/",

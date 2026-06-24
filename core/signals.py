@@ -9,14 +9,14 @@ from .models import EmailDraft
 def sync_email_draft_statuses(sender, instance, **kwargs):
     """Keep one EmailDraft 'scheduled' per (contact, task) group.
 
-    Within a (contact, task) combination, the highest-version draft becomes
+    When a draft is created under a task, the highest-version draft becomes
     ``scheduled`` and every lower-version non-sent draft becomes ``draft``.
 
     All writes go through queryset ``.update()``, which does **not** emit
     ``post_save`` — so this handler never re-triggers itself.
     """
-    # Skip fixture loading and drafts that aren't tied to a task.
-    if kwargs.get("raw") or instance.task_id is None:
+    # Skip fixture loading, regular updates, and drafts that aren't tied to a task.
+    if kwargs.get("raw") or not kwargs.get("created") or instance.task_id is None:
         return
 
     group = EmailDraft.objects.filter(
