@@ -71,18 +71,29 @@ duplicate rows and keep the newest record before database constraints are applie
 
 ## API
 
-Base path: `/api/` (browsable API enabled in DEBUG). All endpoints support
-`GET` (list/retrieve), `POST`, `PUT`, `PATCH`, `DELETE` and `?search=`.
+Base path: `/api/` (browsable API enabled in DEBUG). List endpoints support
+`?search=`; enum fields and relations also support exact-match query params
+(see the per-resource sections below).
 
-| Resource | Endpoint |
-|----------|----------|
-| Companies | `/api/companies/` |
-| Contacts | `/api/contacts/` |
-| Knowledge tags | `/api/knowledge-tags/` |
-| Knowledge | `/api/knowledge/` |
-| Knowledge abstracts | `/api/knowledge/abstract/` |
-| Email tasks | `/api/email-tasks/` |
-| Email drafts | `/api/email-drafts/` |
+### Resources and methods
+
+| Resource | Endpoint | Allowed methods | Notes |
+|----------|----------|-----------------|-------|
+| Companies | `/api/companies/` | `GET`, `POST`, `PUT`, `PATCH`, `DELETE` | full CRUD |
+| Contacts | `/api/contacts/` | `GET`, `POST`, `PUT`, `PATCH`, `DELETE` | full CRUD |
+| Knowledge tags | `/api/knowledge-tags/` | `GET`, `POST`, `PUT`, `PATCH`, `DELETE` | full CRUD |
+| Knowledge | `/api/knowledge/` | `GET`, `POST`, `PUT`, `PATCH`, `DELETE` | full CRUD |
+| Knowledge abstracts | `/api/knowledge/abstract/` | `GET` | action on the knowledge viewset |
+| Email tasks | `/api/email-tasks/` | `GET`, `POST`, `PUT`, `PATCH`, `DELETE` | full CRUD |
+| Email drafts | `/api/email-drafts/` | `GET`, `POST`, `DELETE` | **immutable** — `PUT`/`PATCH` return `405` |
+
+> **Email drafts are write-once.** Once created via `POST`, an `EmailDraft`
+> cannot be updated through the REST API: `PUT` and `PATCH` respond with
+> `405 Method Not Allowed`. To revise a draft, `POST` a new one — the API
+> auto-assigns the next `version` within the same `(contact, task)` group,
+> and the system maintains `status` (see
+> [`post_save` signal](core/signals.py)). Outside the API (e.g. via the
+> Django admin or fixtures), rows can still be edited directly.
 
 **Filtering** — enum fields and relations support exact-match query params (via `django-filter`):
 
@@ -110,8 +121,13 @@ The boolean `about_empty` / `story_empty` filters treat a field as empty when it
 that have content — handy for finding records that still need enrichment.
 The `task_latest` filter mirrors the admin task filter: for the selected task, it returns
 only the highest `version` `EmailDraft` for each contact.
-`EmailDraft.version` is read-only in the API. POST generates the next version within the
-same `(contact, task)` group, and write requests that include `version` return `400`.
+`EmailDraft.version` and `EmailDraft.status` are **system-generated and not
+accepted on POST**: `POST` automatically assigns the next `version` within the same
+`(contact, task)` group, and a post-save signal keeps `status` consistent
+(highest-version drafts are marked `scheduled`, older drafts `draft`, sent
+drafts stay `sent`). Any `POST` request body that contains `version` or
+`status` returns `400`. Because drafts are write-once, there is no other
+write path that can change them via the API.
 
 **Knowledge tag usage:**
 
@@ -140,12 +156,21 @@ POST /api/knowledge/
 PATCH /api/knowledge/<uuid>/
 {"tags": ["<tag-uuid>"]}
 
-# Create or update an email draft with associated knowledge snippets
+# Create an email draft with associated knowledge snippets
+# `version` and `status` are NOT accepted in the body — both are system-generated.
 POST /api/email-drafts/
 {"contact": "<contact-uuid>", "task": "<task-uuid>", "subject": "...", "knowledge_ids": ["<knowledge-uuid>"]}
 
+# Returning 400 when forbidden fields are supplied:
+# {"contact": "<contact-uuid>", "task": "<task-uuid>", "subject": "...", "version": 5, "status": "sent"}
+# -> 400 {"version": ["This field is generated automatically."],
+#         "status": ["This field is generated automatically."]}
+
+# PUT / PATCH on email drafts are not supported:
 PATCH /api/email-drafts/<uuid>/
-{"knowledge_ids": ["<knowledge-uuid>", "<knowledge-uuid-2>"]}
+{"knowledge_ids": ["<knowledge-uuid-2>"]}
+# -> 405 Method Not Allowed
+# To revise a draft, POST a new one and let the API bump the version.
 
 # Filter knowledge by tag
 GET /api/knowledge/?tags__name=产品介绍
@@ -154,8 +179,8 @@ GET /api/knowledge/?tags__name=产品介绍
 The response for each knowledge snippet includes both `tags` (list of UUIDs, writable) and
 `tag_names` (list of name strings, read-only).
 Email tasks accept `knowledges` as UUIDs on write and return full nested knowledge objects
-on read. Email drafts return nested `knowledges` on read and use `knowledge_ids` for
-POST/PATCH updates.
+on read. Email drafts are immutable (no `PUT`/`PATCH`) and use `knowledge_ids` only on
+`POST`; on read they return nested `knowledges`.
 
 An invalid value (e.g. `?status=bogus`) returns `400`.
 

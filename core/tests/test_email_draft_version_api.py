@@ -81,59 +81,47 @@ class EmailDraftAPIVersionTests(EmailDraftAPITestMixin, TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertIn("version", response.json())
 
-    def test_patch_rejects_supplied_version(self):
-        response = self.client.patch(
-            f"/api/email-drafts/{self.contact_one_latest.pk}/",
-            data=json.dumps({"version": 99}),
-            content_type="application/json",
-        )
-
-        self.assertEqual(response.status_code, 400)
-        self.assertIn("version", response.json())
-        self.contact_one_latest.refresh_from_db()
-        self.assertEqual(self.contact_one_latest.version, 2)
-
-    def test_patch_changing_task_generates_next_version_for_new_group(self):
-        response = self.client.patch(
-            f"/api/email-drafts/{self.contact_one_latest.pk}/",
-            data=json.dumps({"task": str(self.other_task.pk)}),
-            content_type="application/json",
-        )
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()["version"], 2)
-        self.contact_one_latest.refresh_from_db()
-        self.assertEqual(self.contact_one_latest.task, self.other_task)
-        self.assertEqual(self.contact_one_latest.version, 2)
-
-    def test_patch_can_mark_latest_draft_as_sent(self):
-        response = self.client.patch(
-            f"/api/email-drafts/{self.contact_one_latest.pk}/",
-            data=json.dumps({"status": EmailDraft.Status.SENT.value}),
-            content_type="application/json",
-        )
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()["status"], EmailDraft.Status.SENT)
-        self.contact_one_latest.refresh_from_db()
-        self.assertEqual(self.contact_one_latest.status, EmailDraft.Status.SENT)
-
-    def test_put_rejects_supplied_version(self):
-        response = self.client.put(
-            f"/api/email-drafts/{self.contact_one_latest.pk}/",
+    def test_post_rejects_supplied_status(self):
+        response = self.client.post(
+            "/api/email-drafts/",
             data=json.dumps(
                 {
-                    "contact": str(self.contact_one.pk),
+                    "contact": str(self.contact_two.pk),
                     "task": str(self.task.pk),
-                    "subject": "Updated",
-                    "status": EmailDraft.Status.DRAFT.value,
-                    "version": 99,
+                    "subject": "Client supplied status",
+                    "status": EmailDraft.Status.SENT.value,
                 }
             ),
             content_type="application/json",
         )
 
         self.assertEqual(response.status_code, 400)
-        self.assertIn("version", response.json())
+        self.assertIn("status", response.json())
+
+    def test_patch_is_not_allowed(self):
+        response = self.client.patch(
+            f"/api/email-drafts/{self.contact_one_latest.pk}/",
+            data=json.dumps({"subject": "Should be ignored"}),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 405)
         self.contact_one_latest.refresh_from_db()
-        self.assertEqual(self.contact_one_latest.version, 2)
+        self.assertEqual(self.contact_one_latest.subject, "Latest")
+
+    def test_put_is_not_allowed(self):
+        response = self.client.put(
+            f"/api/email-drafts/{self.contact_one_latest.pk}/",
+            data=json.dumps(
+                {
+                    "contact": str(self.contact_one.pk),
+                    "task": str(self.task.pk),
+                    "subject": "Should be ignored",
+                }
+            ),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 405)
+        self.contact_one_latest.refresh_from_db()
+        self.assertEqual(self.contact_one_latest.subject, "Latest")
