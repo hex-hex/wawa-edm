@@ -1,7 +1,7 @@
 import django_filters
 from django.db.models import Exists, OuterRef, Q, Subquery
 
-from .models import Company, Contact, EmailDraft, EmailTask
+from .models import Company, Contact, ContactTag, EmailDraft, EmailTask
 
 
 def latest_drafts_per_contact_for_task(queryset, task):
@@ -43,10 +43,17 @@ class ContactFilter(django_filters.FilterSet):
         method="filter_has_email_draft",
         label="has email draft",
     )
+    tags__in = django_filters.ModelMultipleChoiceFilter(
+        field_name="tags",
+        queryset=ContactTag.objects.all(),
+        conjoined=False,
+        distinct=True,
+        label="tags in (any of the given tag ids)",
+    )
 
     class Meta:
         model = Contact
-        fields = ["priority", "gender", "has_email_draft"]
+        fields = ["priority", "gender", "has_email_draft", "tags", "tags__in"]
 
     def filter_story_empty(self, queryset, name, value):
         if value is None:

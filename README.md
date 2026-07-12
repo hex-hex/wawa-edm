@@ -42,7 +42,8 @@ All models live in the `core` app. UUID PKs + timestamps throughout.
 | Model | Fields | Relationships |
 |-------|--------|---------------|
 | `Company` | `name`, `website`, `address`, `about` (markdown) | — |
-| `Contact` | `first_name`\*, `middle_name`\*, `last_name`\*, `email`\*, `role`\*, `phone`\*, `priority`\* (enum), `gender`\* (enum), `subscribed` (default `true`), `behavior`\* (markdown), `story` (markdown) | `company` → `Company` |
+| `ContactTag` | `name` (unique, max 127 chars) | — |
+| `Contact` | `first_name`\*, `middle_name`\*, `last_name`\*, `email`\*, `role`\*, `phone`\*, `priority`\* (enum), `gender`\* (enum), `subscribed` (default `true`), `behavior`\* (markdown), `story` (markdown) | `company` → `Company`, `tags` ⇄ `ContactTag` (M2M) |
 | `KnowledgeTag` | `name` (unique, max 127 chars) | — |
 | `Knowledge` | `abstract`, `content` (markdown) | `tags` ⇄ `KnowledgeTag` (M2M) |
 | `EmailTask` | `name`, `target`, `strategy` | `knowledges` ⇄ `Knowledge` (M2M) |
@@ -50,7 +51,7 @@ All models live in the `core` app. UUID PKs + timestamps throughout.
 
 Relationships: `Company` 1—∗ `Contact` 1—∗ `EmailDraft`; `EmailTask` 1—∗ `EmailDraft`
 (the task that guided the draft); `EmailTask` ∗—∗ `Knowledge`; `EmailDraft` ∗—∗ `Knowledge`;
-`Knowledge` ∗—∗ `KnowledgeTag`.
+`Knowledge` ∗—∗ `KnowledgeTag`; `Contact` ∗—∗ `ContactTag`.
 `EmailDraft.status` is one of `draft` (default) / `scheduled` / `sent` / `failed`.
 `Contact.priority` is one of `hot` / `warm` / `cold` and `Contact.gender` is one of
 `male` / `female` / `other`. `Contact.subscribed` defaults to `true` and is returned by
@@ -60,6 +61,7 @@ are required.
 Unique constraints:
 
 - `KnowledgeTag.name` is unique.
+- `ContactTag.name` is unique.
 - `Contact.email` is case-insensitively unique when it is neither `NULL` nor an empty
   string (`""`).
 - `Contact(first_name, middle_name, last_name, email)` is unique; `NULL` values are treated
@@ -80,6 +82,7 @@ Base path: `/api/` (browsable API enabled in DEBUG). List endpoints support
 | Resource | Endpoint | Allowed methods | Notes |
 |----------|----------|-----------------|-------|
 | Companies | `/api/companies/` | `GET`, `POST`, `PUT`, `PATCH`, `DELETE` | full CRUD |
+| Contact tags | `/api/contact-tags/` | `GET`, `POST`, `PUT`, `PATCH`, `DELETE` | full CRUD |
 | Contacts | `/api/contacts/` | `GET`, `POST`, `PUT`, `PATCH`, `DELETE` | full CRUD |
 | Knowledge tags | `/api/knowledge-tags/` | `GET`, `POST`, `PUT`, `PATCH`, `DELETE` | full CRUD |
 | Knowledge | `/api/knowledge/` | `GET`, `POST`, `PUT`, `PATCH`, `DELETE` | full CRUD |
@@ -105,6 +108,8 @@ GET /api/contacts/?gender=female                  # exact match: male | female |
 GET /api/companies/?about_empty=true              # companies whose about is null or blank
 GET /api/contacts/?story_empty=true               # contacts whose story is null or blank
 GET /api/contacts/?has_email_draft=false          # contacts that do not have an email draft
+GET /api/contacts/?tags=<uuid>                    # contacts carrying a specific tag (by id)
+GET /api/contacts/?tags__in=<uuid>&tags__in=<uuid> # contacts carrying any of the given tag ids
 GET /api/email-drafts/?task=<uuid>                # drafts written under a given EmailTask
 GET /api/email-drafts/?task_latest=<uuid>         # latest-version draft per contact under a given EmailTask
 GET /api/email-drafts/?knowledges=<uuid>          # drafts associated with a specific Knowledge snippet
@@ -128,6 +133,32 @@ accepted on POST**: `POST` automatically assigns the next `version` within the s
 drafts stay `sent`). Any `POST` request body that contains `version` or
 `status` returns `400`. Because drafts are write-once, there is no other
 write path that can change them via the API.
+
+**Contact tag usage:**
+
+```
+# Create a tag
+POST /api/contact-tags/
+{"name": "VIP"}
+
+# List all tags
+GET /api/contact-tags/
+
+# Attach tags to a contact (pass a list of tag UUIDs) — works on POST/PUT/PATCH
+POST /api/contacts/
+{"company": "<company-uuid>", "story": "...", "tags": ["<tag-uuid>", "<tag-uuid-2>"]}
+
+# Replace the tags on an existing contact
+PATCH /api/contacts/<uuid>/
+{"tags": ["<tag-uuid>"]}
+
+# Filter contacts by tag
+GET /api/contacts/?tags=<tag-uuid>                     # contacts with this exact tag
+GET /api/contacts/?tags__in=<tag-uuid>&tags__in=<uuid> # contacts with any of these tags (OR)
+```
+
+The response for each contact includes both `tags` (list of UUIDs, writable) and
+`tag_names` (list of name strings, read-only).
 
 **Knowledge tag usage:**
 

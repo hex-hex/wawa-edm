@@ -6,6 +6,17 @@ from django.db.models.functions import Lower
 from .company import Company
 
 
+class ContactTag(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=127, unique=True)
+
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
+
+
 class Contact(models.Model):
     class Priority(models.TextChoices):
         HOT = "hot", "Hot"
@@ -22,6 +33,11 @@ class Contact(models.Model):
         Company,
         on_delete=models.CASCADE,
         related_name="contacts",
+    )
+    tags = models.ManyToManyField(
+        ContactTag,
+        related_name="contacts",
+        blank=True,
     )
     first_name = models.CharField(max_length=150, blank=True, null=True)
     middle_name = models.CharField(max_length=150, blank=True, null=True)
