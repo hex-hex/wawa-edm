@@ -2,7 +2,15 @@ from django.contrib import admin
 
 from .admin_render import rendered_field
 from .filters import latest_drafts_per_contact_for_task
-from .models import Company, Contact, EmailDraft, EmailTask, Knowledge, KnowledgeTag
+from .models import (
+    Company,
+    Contact,
+    ContactTag,
+    EmailDraft,
+    EmailTask,
+    Knowledge,
+    KnowledgeTag,
+)
 
 admin.site.site_header = "Wawa EDM"
 admin.site.site_title = "Wawa EDM Admin"
@@ -19,12 +27,19 @@ class CompanyAdmin(admin.ModelAdmin):
     readonly_fields = ("about_preview",)
 
 
+@admin.register(ContactTag)
+class ContactTagAdmin(admin.ModelAdmin):
+    list_display = ("name",)
+    search_fields = ("name",)
+
+
 @admin.register(Contact)
 class ContactAdmin(admin.ModelAdmin):
     list_display = ("created_at", "first_name", "last_name", "email", "company")
-    list_filter = ("created_at",)
+    list_filter = ("created_at", "tags")
     search_fields = ("first_name", "last_name", "email")
     autocomplete_fields = ("company",)
+    filter_horizontal = ("tags",)
     ordering = ("-created_at",)
     story_preview = rendered_field("story", fmt="markdown", label="Story")
     behavior_preview = rendered_field("behavior", fmt="markdown", label="Behavior")
