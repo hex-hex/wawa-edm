@@ -7,24 +7,6 @@ from core.tests.helpers import EmailDraftAPITestMixin
 
 
 class EmailDraftAPIKnowledgeTests(EmailDraftAPITestMixin, TestCase):
-    def test_email_draft_can_associate_knowledges(self):
-        response = self.client.patch(
-            f"/api/email-drafts/{self.contact_one_latest.pk}/",
-            data=json.dumps({"knowledge_ids": [str(self.knowledge.pk)]}),
-            content_type="application/json",
-        )
-
-        self.assertEqual(response.status_code, 200)
-        self.contact_one_latest.refresh_from_db()
-        self.assertEqual(
-            list(self.contact_one_latest.knowledges.values_list("pk", flat=True)),
-            [self.knowledge.pk],
-        )
-        knowledge_data = response.json()["knowledges"][0]
-        self.assertEqual(knowledge_data["id"], str(self.knowledge.pk))
-        self.assertEqual(knowledge_data["abstract"], "Pricing proof")
-        self.assertEqual(knowledge_data["content"], "Use the pricing proof point.")
-
     def test_email_draft_can_create_with_knowledges(self):
         response = self.client.post(
             "/api/email-drafts/",

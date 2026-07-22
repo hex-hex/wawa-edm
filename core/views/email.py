@@ -14,8 +14,15 @@ class EmailTaskViewSet(viewsets.ModelViewSet):
 
 
 class EmailDraftViewSet(viewsets.ModelViewSet):
-    """CRUD API for email drafts."""
+    """API for email drafts.
 
+    Email drafts are **immutable** once created via the API: only ``GET``,
+    ``POST`` and ``DELETE`` are accepted. ``PUT`` and ``PATCH`` are not
+    supported — to revise a draft, create a new one (the API auto-assigns
+    the next ``version`` and the system maintains ``status``).
+    """
+
+    http_method_names = ["get", "post", "delete", "head", "options"]
     queryset = (
         EmailDraft.objects.select_related("contact", "task")
         .prefetch_related("knowledges")
