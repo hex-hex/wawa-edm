@@ -16,5 +16,10 @@ class Company(models.Model):
         verbose_name_plural = "companies"
         ordering = ["name"]
 
+    def save(self, *args, **kwargs):
+        if isinstance(self.website, str) and not self.website.strip():
+            self.website = None
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return self.name

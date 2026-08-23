@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0023_contacttag_contact_tags'),
+        ('core', '0024_normalize_company_website'),
     ]
 
     operations = [
