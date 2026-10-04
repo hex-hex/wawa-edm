@@ -18,20 +18,38 @@ def latest_drafts_per_contact_for_task(queryset, task):
 
 
 class CompanyFilter(django_filters.FilterSet):
-    about_empty = django_filters.BooleanFilter(
-        method="filter_about_empty",
-        label="about is null or blank",
+    waiting_for_investigation = django_filters.BooleanFilter(
+        method="filter_waiting_for_investigation",
+        label=(
+            "no contact, or about missing/short/invalid "
+            "(<90 meaningful words, or placeholder)"
+        ),
     )
 
     class Meta:
         model = Company
-        fields = []
+        fields = ["waiting_for_investigation"]
 
-    def filter_about_empty(self, queryset, name, value):
+    def filter_waiting_for_investigation(self, queryset, name, value):
         if value is None:
             return queryset
-        empty = Q(about__isnull=True) | Q(about__exact="")
-        return queryset.filter(empty) if value else queryset.exclude(empty)
+        from .services.company_investigation import evaluate_company
+
+        candidates = (
+            queryset.filter(
+                Q(contacts__isnull=True)
+                | Q(about__isnull=True)
+                | Q(about__exact="")
+            )
+            .distinct()
+            .prefetch_related("contacts")
+        )
+        keep_ids = [
+            c.id
+            for c in candidates
+            if evaluate_company(c).waiting == value
+        ]
+        return queryset.filter(id__in=keep_ids)
 
 
 class ContactFilter(django_filters.FilterSet):
@@ -53,7 +71,7 @@ class ContactFilter(django_filters.FilterSet):
 
     class Meta:
         model = Contact
-        fields = ["priority", "gender", "has_email_draft", "tags", "tags__in"]
+        fields = ["priority", "has_email_draft", "tags", "tags__in"]
 
     def filter_story_empty(self, queryset, name, value):
         if value is None:

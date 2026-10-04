@@ -104,8 +104,7 @@ Base path: `/api/` (browsable API enabled in DEBUG). List endpoints support
 GET /api/email-drafts/?status=draft               # exact match: draft | scheduled | sent | failed
 GET /api/email-drafts/?status=sent&search=welcome # combine with ?search=
 GET /api/contacts/?priority=hot                   # exact match: hot | warm | cold
-GET /api/contacts/?gender=female                  # exact match: male | female | other
-GET /api/companies/?about_empty=true              # companies whose about is null or blank
+GET /api/companies/?waiting_for_investigation=true   # companies still needing research (see rule below)
 GET /api/contacts/?story_empty=true               # contacts whose story is null or blank
 GET /api/contacts/?has_email_draft=false          # contacts that do not have an email draft
 GET /api/contacts/?tags=<uuid>                    # contacts carrying a specific tag (by id)
@@ -121,11 +120,29 @@ GET /api/knowledge/?tags__name=产品               # knowledge with a specific 
 GET /api/knowledge/?tags__name__icontains=产      # knowledge with a tag name containing substring
 ```
 
-The boolean `about_empty` / `story_empty` filters treat a field as empty when it is `NULL`
+The boolean `story_empty` filter treats `story` as empty when it is `NULL`
 **or** an empty string (`""`). Use `=true` for missing/blank values and `=false` for records
 that have content — handy for finding records that still need enrichment.
 The `task_latest` filter mirrors the admin task filter: for the selected task, it returns
 only the highest `version` `EmailDraft` for each contact.
+
+**Company `waiting_for_investigation` rule.** The `?waiting_for_investigation=` boolean
+filter is the canonical way to surface companies that still need research before any
+contact on them can be worked. A company is considered *waiting* when **any** of these
+holds (computed live by `core/services/company_investigation.evaluate_company`):
+
+- `no_contact` — the company has zero associated `Contact` rows.
+- `about_missing` — `about` is `NULL` or blank.
+- `about_too_short` — after stripping non-letter characters, `about` has fewer than
+  90 words (`ABOUT_MIN_WORDS` in `core/services/company_investigation.py`).
+- `about_invalid` — `about` is one of the placeholder values `tbd`, `n/a`, `todo`,
+  `none`, `unknown`, `-`, `—`, or contains no letters at all.
+
+`?waiting_for_investigation=true` returns companies needing research;
+`?waiting_for_investigation=false` returns the rest. The DB-level filter narrows the
+candidate set with `Q(contacts__isnull=True) | Q(about__isnull=True) | Q(about__exact="")`
+and `prefetch_related("contacts")`; the per-row word count and placeholder checks
+happen in Python.
 `EmailDraft.version` and `EmailDraft.status` are **system-generated and not
 accepted on POST**: `POST` automatically assigns the next `version` within the same
 `(contact, task)` group, and a post-save signal keeps `status` consistent
