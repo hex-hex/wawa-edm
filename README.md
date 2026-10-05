@@ -74,7 +74,7 @@ duplicate rows and keep the newest record before database constraints are applie
 ## API
 
 Base path: `/api/` (browsable API enabled in DEBUG). List endpoints support
-`?search=`; enum fields and relations also support exact-match query params
+`?search=` and `?ordering=`; enum fields and relations also support exact-match query params
 (see the per-resource sections below).
 
 ### Resources and methods
@@ -105,6 +105,8 @@ GET /api/email-drafts/?status=draft               # exact match: draft | schedul
 GET /api/email-drafts/?status=sent&search=welcome # combine with ?search=
 GET /api/contacts/?priority=hot                   # exact match: hot | warm | cold
 GET /api/companies/?waiting_for_investigation=true   # companies still needing research (see rule below)
+GET /api/companies/?ordering=-updated_at           # companies sorted by latest update first
+GET /api/companies/?ordering=name                  # companies sorted by name ascending (default)
 GET /api/contacts/?story_empty=true               # contacts whose story is null or blank
 GET /api/contacts/?has_email_draft=false          # contacts that do not have an email draft
 GET /api/contacts/?tags=<uuid>                    # contacts carrying a specific tag (by id)
@@ -125,6 +127,20 @@ The boolean `story_empty` filter treats `story` as empty when it is `NULL`
 that have content — handy for finding records that still need enrichment.
 The `task_latest` filter mirrors the admin task filter: for the selected task, it returns
 only the highest `version` `EmailDraft` for each contact.
+
+**Sorting** — `?ordering=` controls the list order; prefix with `-` for descending. Only
+whitelisted fields take effect; values outside the whitelist are silently ignored (the response
+falls back to the default order). Currently:
+
+| Resource | Allowed `ordering` fields | Default |
+|----------|--------------------------|---------|
+| Companies | `name`, `created_at`, `updated_at` | `name` (ascending, from `Company.Meta.ordering`) |
+
+```
+GET /api/companies/?ordering=name                 # name ascending (default)
+GET /api/companies/?ordering=-updated_at          # most recently updated first
+GET /api/companies/?ordering=created_at&waiting_for_investigation=true   # combine with filters
+```
 
 **Company `waiting_for_investigation` rule.** The `?waiting_for_investigation=` boolean
 filter is the canonical way to surface companies that still need research before any
