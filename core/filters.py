@@ -57,6 +57,13 @@ class ContactFilter(django_filters.FilterSet):
         method="filter_story_empty",
         label="story is null or blank",
     )
+    waiting_for_investigation = django_filters.BooleanFilter(
+        method="filter_waiting_for_investigation",
+        label=(
+            "story or behavior missing/short/invalid "
+            "(story<80 chars or behavior<30 chars or placeholder)"
+        ),
+    )
     has_email_draft = django_filters.BooleanFilter(
         method="filter_has_email_draft",
         label="has email draft",
@@ -71,13 +78,31 @@ class ContactFilter(django_filters.FilterSet):
 
     class Meta:
         model = Contact
-        fields = ["priority", "has_email_draft", "tags", "tags__in"]
+        fields = [
+            "priority",
+            "has_email_draft",
+            "waiting_for_investigation",
+            "tags",
+            "tags__in",
+        ]
 
     def filter_story_empty(self, queryset, name, value):
         if value is None:
             return queryset
         empty = Q(story__isnull=True) | Q(story__exact="")
         return queryset.filter(empty) if value else queryset.exclude(empty)
+
+    def filter_waiting_for_investigation(self, queryset, name, value):
+        if value is None:
+            return queryset
+        from .services.contact_investigation import evaluate_contact
+
+        keep_ids = [
+            c.id
+            for c in queryset.only("id", "story", "behavior")
+            if evaluate_contact(c).waiting == value
+        ]
+        return queryset.filter(id__in=keep_ids)
 
     def filter_has_email_draft(self, queryset, name, value):
         if value is None:

@@ -111,6 +111,8 @@ GET /api/contacts/?story_empty=true               # contacts whose story is null
 GET /api/contacts/?has_email_draft=false          # contacts that do not have an email draft
 GET /api/contacts/?tags=<uuid>                    # contacts carrying a specific tag (by id)
 GET /api/contacts/?tags__in=<uuid>&tags__in=<uuid> # contacts carrying any of the given tag ids
+GET /api/contacts/?waiting_for_investigation=true # contacts whose story/behavior still need research (see rule below)
+GET /api/contacts/?waiting_for_investigation=true&ordering=-updated_at # waiting contacts, most recently updated first
 GET /api/email-drafts/?task=<uuid>                # drafts written under a given EmailTask
 GET /api/email-drafts/?task_latest=<uuid>         # latest-version draft per contact under a given EmailTask
 GET /api/email-drafts/?knowledges=<uuid>          # drafts associated with a specific Knowledge snippet
@@ -135,11 +137,14 @@ falls back to the default order). Currently:
 | Resource | Allowed `ordering` fields | Default |
 |----------|--------------------------|---------|
 | Companies | `name`, `created_at`, `updated_at` | `name` (ascending, from `Company.Meta.ordering`) |
+| Contacts | `first_name`, `last_name`, `priority`, `created_at`, `updated_at` | `last_name`, `first_name` (ascending, from `Contact.Meta.ordering`) |
 
 ```
 GET /api/companies/?ordering=name                 # name ascending (default)
 GET /api/companies/?ordering=-updated_at          # most recently updated first
 GET /api/companies/?ordering=created_at&waiting_for_investigation=true   # combine with filters
+GET /api/contacts/?ordering=-updated_at           # most recently updated contact first
+GET /api/contacts/?ordering=last_name&priority=hot # combine sorting with filters
 ```
 
 **Company `waiting_for_investigation` rule.** The `?waiting_for_investigation=` boolean
@@ -159,6 +164,27 @@ holds (computed live by `core/services/company_investigation.evaluate_company`):
 candidate set with `Q(contacts__isnull=True) | Q(about__isnull=True) | Q(about__exact="")`
 and `prefetch_related("contacts")`; the per-row word count and placeholder checks
 happen in Python.
+
+**Contact `waiting_for_investigation` rule.** The `?waiting_for_investigation=` boolean
+filter is the canonical way to surface contacts that still need research before they
+can be worked. A contact is considered *waiting* when **any** of these holds (computed
+live by `core/services/contact_investigation.evaluate_contact`):
+
+- `story_missing` — `story` is `NULL` or blank.
+- `story_too_short` — `story` has fewer than 80 characters after stripping
+  (`STORY_MIN_CHARS` in `core/services/contact_investigation.py`).
+- `story_invalid` — `story` is one of the placeholder values `tbd`, `n/a`, `todo`,
+  `none`, `unknown`, `-`, `—`.
+- `behavior_missing` — `behavior` is `NULL` or blank.
+- `behavior_too_short` — `behavior` has fewer than 30 characters after stripping
+  (`BEHAVIOR_MIN_CHARS`); the bar is intentionally lower than `story` because
+  behavioral notes are typically shorter.
+
+`?waiting_for_investigation=true` returns contacts needing research;
+`?waiting_for_investigation=false` returns the rest. The DB-level query selects only
+`id/story/behavior` from each candidate row and the length / placeholder checks happen
+in Python. The filter composes with `?ordering=` so it is easy to triage the queue by
+recency, e.g. `?waiting_for_investigation=true&ordering=-updated_at`.
 `EmailDraft.version` and `EmailDraft.status` are **system-generated and not
 accepted on POST**: `POST` automatically assigns the next `version` within the same
 `(contact, task)` group, and a post-save signal keeps `status` consistent

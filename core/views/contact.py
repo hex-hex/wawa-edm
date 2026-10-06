@@ -1,4 +1,6 @@
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets
+from rest_framework.filters import OrderingFilter, SearchFilter
 
 from ..filters import ContactFilter
 from ..models import Contact, ContactTag
@@ -19,6 +21,15 @@ class ContactViewSet(viewsets.ModelViewSet):
     queryset = Contact.objects.select_related("company").prefetch_related("tags").all()
     serializer_class = ContactSerializer
     filterset_class = ContactFilter
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    ordering_fields = [
+        "first_name",
+        "last_name",
+        "priority",
+        "created_at",
+        "updated_at",
+    ]
+    ordering = ["last_name", "first_name"]
     search_fields = [
         "first_name",
         "middle_name",
