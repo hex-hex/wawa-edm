@@ -99,7 +99,7 @@ class ContactFilter(django_filters.FilterSet):
 
         keep_ids = [
             c.id
-            for c in queryset.only("id", "story", "behavior")
+            for c in queryset
             if evaluate_contact(c).waiting == value
         ]
         return queryset.filter(id__in=keep_ids)
