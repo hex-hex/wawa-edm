@@ -1,5 +1,6 @@
 import django_filters
 from django.db.models import Exists, OuterRef, Q, Subquery
+from django.db.models.functions import Length
 
 from .models import Company, Contact, ContactTag, EmailDraft, EmailTask
 
@@ -66,7 +67,7 @@ class ContactFilter(django_filters.FilterSet):
     )
     has_email_draft = django_filters.BooleanFilter(
         method="filter_has_email_draft",
-        label="has email draft",
+        label="has email draft (content >= 50 chars)",
     )
     tags__in = django_filters.ModelMultipleChoiceFilter(
         field_name="tags",
@@ -108,7 +109,11 @@ class ContactFilter(django_filters.FilterSet):
         if value is None:
             return queryset
 
-        email_draft_exists = EmailDraft.objects.filter(contact_id=OuterRef("pk"))
+        email_draft_exists = (
+            EmailDraft.objects.filter(contact_id=OuterRef("pk"))
+            .annotate(_content_length=Length("content"))
+            .filter(_content_length__gte=50)
+        )
         return (
             queryset.filter(Exists(email_draft_exists))
             if value
